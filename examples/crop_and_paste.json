@@ -1,0 +1,257 @@
+{
+  "last_node_id": 5,
+  "last_link_id": 6,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "Crop Image with Coords",
+      "pos": [
+        1879.891357421875,
+        288.3313293457031
+      ],
+      "size": [
+        315,
+        150
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Cropped Image",
+          "type": "IMAGE",
+          "links": [
+            3,
+            6
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "Coords",
+          "type": "LIST",
+          "links": [
+            4
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Crop Image with Coords"
+      },
+      "widgets_values": [
+        512,
+        512,
+        -1,
+        -1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "Paste Image with Coords",
+      "pos": [
+        2268.15673828125,
+        191.24176025390625
+      ],
+      "size": [
+        289.79998779296875,
+        66
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "full_image",
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "cropped_image",
+          "type": "IMAGE",
+          "link": 3
+        },
+        {
+          "name": "coords",
+          "type": "LIST",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Pasted Image",
+          "type": "IMAGE",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Paste Image with Coords"
+      }
+    },
+    {
+      "id": 4,
+      "type": "PreviewImage",
+      "pos": [
+        2647.94677734375,
+        187.39999389648438
+      ],
+      "size": [
+        297.22064208984375,
+        246
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 5,
+      "type": "PreviewImage",
+      "pos": [
+        2244.199462890625,
+        317.08172607421875
+      ],
+      "size": [
+        363.06500244140625,
+        246
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        1515.659912109375,
+        192.93235778808594
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1,
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example_world_map_equirectangular.png",
+        "image"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      2,
+      0,
+      3,
+      1,
+      "IMAGE"
+    ],
+    [
+      4,
+      2,
+      1,
+      3,
+      2,
+      "LIST"
+    ],
+    [
+      5,
+      3,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      2,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8730237586043446,
+      "offset": [
+        -1084.3447094095168,
+        198.94417177397622
+      ]
+    },
+    "node_versions": {
+      "comfy-core": "0.3.12"
+    }
+  },
+  "version": 0.4
+}

@@ -1,0 +1,17 @@
+abstract: "Utilities for converting between different cubemap, equirectangular, and panoramic."
+authors:
+  - family-names: Egan
+    given-names: Ben
+cff-version: 1.2.0
+date-released: "2024-12-15"
+keywords:
+  - equirectangular
+  - panorama
+  - "360 degrees"
+  - "360 degree images"
+  - cubemap
+  - research
+license: MIT
+message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/ProGamerGov/pytorch360convert"
+title: "pytorch360convert"
