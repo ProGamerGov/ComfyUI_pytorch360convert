@@ -1,0 +1,15 @@
+[project]
+name = "pytorch360convert"
+description = "A collection of custom nodes for working and converting between 360 degree equirectangular images, cubemap, and perspective images. Panoramic 360 images are also sometimes known as 'VR photography', 'image sphere', and 360 pano."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["pytorch360convert"]
+
+[project.urls]
+Repository = "https://github.com/ProGamerGov/ComfyUI_pytorch360convert"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI_pytorch360convert"
+Icon = ""
