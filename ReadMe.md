@@ -52,6 +52,12 @@ Or for Windows:
 path/to/python.exe -m pip install pytorch360convert
 ```
 
+#### ComfyUI registry install
+
+```
+comfy node registry-install pytorch360convert
+```
+
 ## 💡 Usage Examples
 
 See the provided workflow files in the `examples` directory for examples of how to use each new node.
