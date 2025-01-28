@@ -61,8 +61,8 @@ class E2CNode:
             "required": {
                 "e_img": ("IMAGE", {"default": None}),
                 "face_width": ("INT", {"default": -1}),
-                "padding_mode": ("STRING", {"default": "bilinear"}),
-                "cube_format": ("STRING", {"default": "stack"}),
+                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
+                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
             },
         }
 
@@ -112,7 +112,7 @@ class E2PNode:
                 "out_h": ("INT", {"default": 512}),
                 "out_w": ("INT", {"default": 512}),
                 "in_rot_deg": ("FLOAT", {"default": 0.0}),
-                "padding_mode": ("STRING", {"default": "bilinear"}),
+                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
             },
         }
 
@@ -163,7 +163,7 @@ class E2ENode:
                 "roll": ("FLOAT", {"default": 0.0}),
                 "h_deg": ("FLOAT", {"default": 0.0}),
                 "v_deg": ("FLOAT", {"default": 0.0}),
-                "padding_mode": ("STRING", {"default": "bilinear"}),
+                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
             },
         }
 
@@ -312,8 +312,8 @@ class C2EMaskedDiffNode:
                 "original_faces": ("IMAGE", {"default": None}),
                 "modified_faces": ("IMAGE", {"default": None}),
                 "original_equi": ("IMAGE", {"default": None}),
-                "padding_mode": ("STRING", {"default": "bilinear"}),
-                "cube_format": ("STRING", {"default": "stack"}),
+                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
+                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
             },
         }
 
