@@ -16,8 +16,8 @@ class C2ENode:
                 "e_img": ("IMAGE", {"default": None}),
                 "h": ("INT", {"default": -1}),
                 "w": ("INT", {"default": -1}),
-                "padding_mode": ("STRING", {"default": "bilinear"}),
-                "cube_format": ("STRING", {"default": "stack"}),
+                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
+                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
             },
         }
 
