@@ -7,6 +7,9 @@ This project implements the functions from [pytorch360convert](https://github.co
 The pytorch360convert library provides powerful and differentiable image transformation utilities for converting between different panoramic image formats like Equirectangular (360°) Images, Cubemap Representations, and Perspective Projections.
 
 
+![](examples/example_basic_equi2cubemap2equi.png)
+
+
 ## 🔧 Requirements
 
 - [pytorch360convert](https://github.com/ProGamerGov/pytorch360convert)
@@ -57,6 +60,7 @@ path/to/python.exe -m pip install pytorch360convert
 ```
 comfy node registry-install comfyui-pytorch360convert
 ```
+
 
 ## 💡 Usage Examples
 
