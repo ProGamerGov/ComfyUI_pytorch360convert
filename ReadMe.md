@@ -6,8 +6,9 @@ This project implements the functions from [pytorch360convert](https://github.co
 
 The pytorch360convert library provides powerful and differentiable image transformation utilities for converting between different panoramic image formats like Equirectangular (360°) Images, Cubemap Representations, and Perspective Projections.
 
-
-![](examples/example_basic_equi2cubemap2equi.png)
+| E2C -> C2E | E2C -> Split -> Rebuild -> C2E |
+| :---: | :----: |
+| ![](examples/example_basic_equi2cubemap2equi.png) | ![](examples/example_basic_equi2cubemap2split2equi.png) |
 
 
 ## 🔧 Requirements
