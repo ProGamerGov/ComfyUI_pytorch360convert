@@ -102,6 +102,10 @@ By default, the cropping node center crops images according to the provided crop
 
 This is an experimental node for only pasting the modified parts of face images to the original equirectangular image. This is meant to help lessen the loss of image quality caused by converting between equirectangular and cubemap formats.
 
+### Panorama Viewer
+
+For viewing 360 images inside ComfyUI, see the [github.com/ProGamerGov/ComfyUI_preview360panorama](https://github.com/ProGamerGov/ComfyUI_preview360panorama) custom node.
+
 
 ## 🤝 Contributing
 
