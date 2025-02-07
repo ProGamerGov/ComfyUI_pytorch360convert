@@ -94,7 +94,7 @@ The Roll Image node rolls an image along the height dimension (y axis) or the wi
 
 ### Crop Image with Coords & Paste Image with Coords
 
-These two nodes allow you to crop a section of an image out to make things inpainting more memory efficient, before pasting the cropped section back into the original image.
+These two nodes allow you to crop a section of an image out to make things like in-painting faster and more memory efficient, before pasting the cropped section back into the original image.
 
 By default, the cropping node center crops images according to the provided crop_h and crop_w values. If crop_h2 and crop_w2 are used, then the image will be cropped according to `[..., crop_h:crop_h2, crop_w:crop_w2, ...]`.
 
