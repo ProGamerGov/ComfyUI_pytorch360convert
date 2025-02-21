@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple
 
 import torch
-from pytorch360convert import c2e, e2c, e2e, e2p
+from pytorch360convert import c2e, e2c, e2e, e2p, pad_180_to_360
 
 
 class C2ENode:
@@ -452,3 +452,28 @@ class PasteImageWithCoordsNode:
         start_h, end_h, start_w, end_w = coords
         full_image[:, start_h:end_h, start_w:end_w, :] = cropped_image
         return (full_image,)
+
+
+class Pad180To360Node:
+    """
+    Apply padding to a 180 degree equirectangular image, to make it 360 degrees.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Padded 360 Image",)
+
+    FUNCTION = "pad_180_to_360_image"
+
+    CATEGORY = "pytorch360convert"
+
+    def pad_180_to_360_image(self, image: torch.Tensor) -> Tuple[torch.Tensor]:
+        assert image.dim() == [3, 4], f"image should have 3 or 4 dimensions, got {image.dim()}"
+        return (pad_180_to_360(image),)
