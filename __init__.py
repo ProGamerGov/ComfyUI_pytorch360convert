@@ -22,6 +22,7 @@ NODE_CLASS_MAPPINGS = {
     "Masked Diff C2E": C2EMaskedDiffNode,
     "Crop Image with Coords": CropImageWithCoordsNode,
     "Paste Image with Coords": PasteImageWithCoordsNode,
+    "Pad 180 to 360 Equirectangular": Pad180To360Node,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -35,4 +36,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Masked Diff C2E": "Masked Diff C2E",
     "Crop Image with Coords": "Crop Image with Coords",
     "Paste Image with Coords": "Paste Image with Coords",
+    ""Pad 180 to 360 Equirectangular": "Pad 180 to 360 Equirectangular",
 }
