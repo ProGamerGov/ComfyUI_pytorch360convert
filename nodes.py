@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple
 
 import torch
-from pytorch360convert import c2e, e2c, e2e, e2p, pad_180_to_360
+from pytorch360convert import c2e, e2c, e2e, e2p
 
 
 class C2ENode:
@@ -488,6 +488,7 @@ class Pad180To360Node:
         return {
             "required": {
                 "image": ("IMAGE", {"default": None}),
+                "fill_value": ("FLOAT", {"default": 0.0}),
             },
         }
 
@@ -498,9 +499,14 @@ class Pad180To360Node:
 
     CATEGORY = "pytorch360convert"
 
-    def pad_180_to_360_image(self, image: torch.Tensor) -> Tuple[torch.Tensor]:
-        assert image.dim() == [
-            3,
-            4,
-        ], f"image should have 3 or 4 dimensions, got {image.dim()}"
-        return (pad_180_to_360(image),)
+    def pad_180_to_360_image(self, e_img: torch.Tensor, fill_value: float = 0.0) -> Tuple[torch.Tensor]:
+        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
+        e_img = e_img.permute(0, 3, 1, 2)
+        H, W = e_img.shape[2:]
+        pad_left = W // 2
+        pad_right = W - pad_left
+
+        e_img_padded = torch.nn.functional.pad(e_img, (pad_left, pad_right), mode="constant", value=fill_value)
+
+        e_img_padded = e_img_padded.permute(0, 2, 3, 1)
+        return (e_img_padded, )
