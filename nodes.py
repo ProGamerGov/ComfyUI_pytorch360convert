@@ -695,7 +695,7 @@ class MonoScopicToStereoscopic:
         first_image: torch.Tensor,
         second_image: torch.Tensor,
         merge_direction: str = "horizontal",
-    ) -> torch.Tensor:
+    ) -> Tuple[torch.Tensor]:
         """
         Merges two monoscopic images into a single stereoscopic image by concatenating
         the two images either horizontally or vertically.
