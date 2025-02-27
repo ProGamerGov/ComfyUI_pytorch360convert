@@ -102,6 +102,22 @@ By default, the cropping node center crops images according to the provided crop
 
 This is an experimental node for only pasting the modified parts of face images to the original equirectangular image. This is meant to help lessen the loss of image quality caused by converting between equirectangular and cubemap formats.
 
+### Pad 180 to 360 Equirectangular
+
+This node pads a given 180 degree equirectangular image, so that it becomes a 360 degree equirectangular image.
+
+### Crop 360 to 180 Equirectangular
+
+This node crops a 360 degree equirectangular image into a 180 degree equirectangular image.
+
+### Crop Stereo to Monoscopic
+
+This node allows you to horizontally or vertically crop a 360 degree equirectangular image that is in stereo format or 3D format, into two separate monoscopic images.
+
+### "Merge Monoscopic into Stereo
+
+This node allows you to combine two separate monoscopic 360 degree images into a single stereo or 3D image.
+
 ### Panorama Viewer
 
 For viewing 360 images inside ComfyUI, see the [github.com/ProGamerGov/ComfyUI_preview360panorama](https://github.com/ProGamerGov/ComfyUI_preview360panorama) custom node.
