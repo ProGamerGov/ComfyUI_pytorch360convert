@@ -512,6 +512,54 @@ class Pad180To360Node:
         return (e_img_padded, )
 
 
+class Crop360To180Node:
+    """
+    Crop a 360 degree equirectangular image to the central 180 degree part.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Cropped 180 Image",)
+
+    FUNCTION = "crop_360_to_180_image"
+
+    CATEGORY = "pytorch360convert"
+
+    def crop_360_to_180_image(self, e_img: torch.Tensor) -> Tuple[torch.Tensor]:
+        """
+        Crop a 360-degree equirectangular image to the central 180-degree part.
+        
+        Args:
+            e_img (torch.Tensor): The 360-degree equirectangular image. Shape should
+                be: (B, H, W, C).
+        
+        Returns:
+            torch.Tensor: The cropped 180-degree equirectangular image. Shape will be:
+                (B, H, W//2, C) where the width is halved.
+        
+        Raises:
+            ValueError: If the input image width is less than or equal to 1.
+        """
+        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
+        _, _, width, _ = e_img.shape
+
+        # Crop the central 180-degree part by slicing the image.
+        crop_start = width // 4
+        crop_end = 3 * width // 4
+
+        # Crop along the width dimension (left and right 180 degrees)
+        cropped_img = e_img[:, :, crop_start:crop_end, :]
+
+        return (cropped_img,)
+
+
 class StereoscopicToMonoScopic:
     """
     Split a stereoscopic image into 2 monoscopic images.
