@@ -500,20 +500,20 @@ class Pad180To360Node:
     CATEGORY = "pytorch360convert"
 
     def pad_180_to_360_image(
-        self, e_img: torch.Tensor, fill_value: float = 0.0
+        self, image: torch.Tensor, fill_value: float = 0.0
     ) -> Tuple[torch.Tensor]:
-        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
-        e_img = e_img.permute(0, 3, 1, 2)
-        H, W = e_img.shape[2:]
+        assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
+        image = image.permute(0, 3, 1, 2)
+        H, W = image.shape[2:]
         pad_left = W // 2
         pad_right = W - pad_left
 
-        e_img_padded = torch.nn.functional.pad(
-            e_img, (pad_left, pad_right), mode="constant", value=fill_value
+        image_padded = torch.nn.functional.pad(
+            image, (pad_left, pad_right), mode="constant", value=fill_value
         )
 
-        e_img_padded = e_img_padded.permute(0, 2, 3, 1)
-        return (e_img_padded,)
+        image_padded = image_padded.permute(0, 2, 3, 1)
+        return (image_padded,)
 
 
 class Crop360To180Node:
@@ -536,12 +536,12 @@ class Crop360To180Node:
 
     CATEGORY = "pytorch360convert"
 
-    def crop_360_to_180_image(self, e_img: torch.Tensor) -> Tuple[torch.Tensor]:
+    def crop_360_to_180_image(self, image: torch.Tensor) -> Tuple[torch.Tensor]:
         """
         Crop a 360-degree equirectangular image to the central 180-degree part.
 
         Args:
-            e_img (torch.Tensor): The 360-degree equirectangular image. Shape should
+            image (torch.Tensor): The 360-degree equirectangular image. Shape should
                 be: (B, H, W, C).
 
         Returns:
@@ -551,15 +551,15 @@ class Crop360To180Node:
         Raises:
             ValueError: If the input image width is less than or equal to 1.
         """
-        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
-        _, _, width, _ = e_img.shape
+        assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
+        _, _, width, _ = image.shape
 
         # Crop the central 180-degree part by slicing the image.
         crop_start = width // 4
         crop_end = 3 * width // 4
 
         # Crop along the width dimension (left and right 180 degrees)
-        cropped_img = e_img[:, :, crop_start:crop_end, :]
+        cropped_img = image[:, :, crop_start:crop_end, :]
 
         return (cropped_img,)
 
