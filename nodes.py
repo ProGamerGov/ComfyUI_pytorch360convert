@@ -564,7 +564,7 @@ class Crop360To180Node:
         return (cropped_img,)
 
 
-class StereoToMonoScopic:
+class StereoToMonoScopicNode:
     """
     Split a stereo image into 2 monoscopic images.
     """
@@ -665,7 +665,7 @@ class StereoToMonoScopic:
         return (first_half, second_half)
 
 
-class MonoScopicToStereo:
+class MonoScopicToStereoNode:
     """
     Merge two monoscopic images into a stereo image.
     """
