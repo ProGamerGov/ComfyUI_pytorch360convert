@@ -564,7 +564,7 @@ class Crop360To180Node:
         return (cropped_img,)
 
 
-class StereoToMonoScopic:
+class StereoToMonoScopicNode:
     """
     Split a stereo image into 2 monoscopic images.
     """
@@ -627,7 +627,7 @@ class StereoToMonoScopic:
         """
         _, height, width, channels = image.shape
 
-        if split_direction == "horizontal":
+        if split_direction == "vertical":
             # Split horizontally (by height)
             mid_point = height // 2
             if height % 2 != 0:  # If height is odd
@@ -641,7 +641,7 @@ class StereoToMonoScopic:
                 # Even height, just split in the middle
                 first_half = image[:, :mid_point, :, :]
                 second_half = image[:, mid_point:, :]
-        elif split_direction == "vertical":
+        elif split_direction == "horizontal":
             # Split vertically (by width)
             mid_point = width // 2
             if width % 2 != 0:  # If width is odd
@@ -665,7 +665,7 @@ class StereoToMonoScopic:
         return (first_half, second_half)
 
 
-class MonoScopicToStereo:
+class MonoScopicToStereoNode:
     """
     Merge two monoscopic images into a stereo image.
     """
