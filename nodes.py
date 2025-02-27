@@ -580,11 +580,11 @@ class StereoscopicToMonoScopic:
         "IMAGE",
     )
     RETURN_NAMES = (
-        "Image",
-        "Image",
+        "First Image",
+        "Second Image",
     )
 
-    FUNCTION = "split_stereoscopic_image"  # Set the function name here
+    FUNCTION = "split_stereoscopic_image"
 
     CATEGORY = "pytorch360convert"
 
@@ -648,7 +648,8 @@ class StereoscopicToMonoScopic:
         else:
             raise ValueError("Invalid split direction. Please choose" + " 'horizontal' or 'vertical'. " + f"Got {split_direction}")
 
-        return first_half, second_half
+        return (first_half, second_half)
+
 
 class MonoScopicToStereoscopic:
     """
