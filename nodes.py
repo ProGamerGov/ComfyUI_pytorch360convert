@@ -564,9 +564,9 @@ class Crop360To180Node:
         return (cropped_img,)
 
 
-class StereoscopicToMonoScopic:
+class StereoToMonoScopic:
     """
-    Split a stereoscopic image into 2 monoscopic images.
+    Split a stereo image into 2 monoscopic images.
     """
 
     @classmethod
@@ -591,11 +591,11 @@ class StereoscopicToMonoScopic:
         "Second Image",
     )
 
-    FUNCTION = "split_stereoscopic_image"
+    FUNCTION = "split_stereo_image"
 
     CATEGORY = "pytorch360convert"
 
-    def split_stereoscopic_image(
+    def split_stereo_image(
         self,
         image: torch.Tensor,
         split_direction: str = "horizontal",
@@ -665,9 +665,9 @@ class StereoscopicToMonoScopic:
         return (first_half, second_half)
 
 
-class MonoScopicToStereoscopic:
+class MonoScopicToStereo:
     """
-    Merge two monoscopic images into a stereoscopic image.
+    Merge two monoscopic images into a stereo image.
     """
 
     @classmethod
@@ -684,20 +684,20 @@ class MonoScopicToStereoscopic:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("Stereoscopic Image",)
+    RETURN_NAMES = ("Stereo Image",)
 
-    FUNCTION = "merge_monoscopic_to_stereoscopic"
+    FUNCTION = "merge_monoscopic_to_stereo"
 
     CATEGORY = "pytorch360convert"
 
-    def merge_monoscopic_to_stereoscopic(
+    def merge_monoscopic_to_stereo(
         self,
         first_image: torch.Tensor,
         second_image: torch.Tensor,
         merge_direction: str = "horizontal",
     ) -> Tuple[torch.Tensor]:
         """
-        Merges two monoscopic images into a single stereoscopic image by concatenating
+        Merges two monoscopic images into a single stereo image by concatenating
         the two images either horizontally or vertically.
 
         Args:
@@ -709,7 +709,7 @@ class MonoScopicToStereoscopic:
                 "horizontal" or "vertical". Default: "horizontal"
 
         Returns:
-            torch.Tensor: The merged stereoscopic image.
+            torch.Tensor: The merged stereo image.
 
         Raises:
             ValueError: If `merge_direction` is not "horizontal" or "vertical".
@@ -730,7 +730,7 @@ class MonoScopicToStereoscopic:
             )
 
             # Concatenate horizontally (by width)
-            stereoscopic_image = torch.cat((first_image, second_image), dim=2)
+            stereo_image = torch.cat((first_image, second_image), dim=2)
 
         elif merge_direction == "vertical":
             assert f_batch_size == s_batch_size, (
@@ -742,7 +742,7 @@ class MonoScopicToStereoscopic:
             )
 
             # Concatenate vertically (by height)
-            stereoscopic_image = torch.cat((first_image, second_image), dim=1)
+            stereo_image = torch.cat((first_image, second_image), dim=1)
 
         else:
             raise ValueError(
@@ -751,4 +751,4 @@ class MonoScopicToStereoscopic:
                 + f"Got {merge_direction}"
             )
 
-        return (stereoscopic_image,)
+        return (stereo_image,)
