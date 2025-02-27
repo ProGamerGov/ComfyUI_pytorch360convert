@@ -28,8 +28,8 @@ NODE_CLASS_MAPPINGS = {
     "Paste Image with Coords": PasteImageWithCoordsNode,
     "Pad 180 to 360 Equirectangular": Pad180To360Node,
     "Crop 360 to 180 Equirectangular": Crop360To180Node,
-    "Crop Stereo to Monoscopic": StereoToMonoScopic,
-    "Merge Monoscopic into Stereo": MonoScopicToStereo,
+    "Crop Stereo to Monoscopic": StereoToMonoScopicNode,
+    "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
