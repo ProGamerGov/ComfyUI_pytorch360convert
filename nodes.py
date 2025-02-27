@@ -499,17 +499,21 @@ class Pad180To360Node:
 
     CATEGORY = "pytorch360convert"
 
-    def pad_180_to_360_image(self, e_img: torch.Tensor, fill_value: float = 0.0) -> Tuple[torch.Tensor]:
+    def pad_180_to_360_image(
+        self, e_img: torch.Tensor, fill_value: float = 0.0
+    ) -> Tuple[torch.Tensor]:
         assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
         e_img = e_img.permute(0, 3, 1, 2)
         H, W = e_img.shape[2:]
         pad_left = W // 2
         pad_right = W - pad_left
 
-        e_img_padded = torch.nn.functional.pad(e_img, (pad_left, pad_right), mode="constant", value=fill_value)
+        e_img_padded = torch.nn.functional.pad(
+            e_img, (pad_left, pad_right), mode="constant", value=fill_value
+        )
 
         e_img_padded = e_img_padded.permute(0, 2, 3, 1)
-        return (e_img_padded, )
+        return (e_img_padded,)
 
 
 class Crop360To180Node:
@@ -535,15 +539,15 @@ class Crop360To180Node:
     def crop_360_to_180_image(self, e_img: torch.Tensor) -> Tuple[torch.Tensor]:
         """
         Crop a 360-degree equirectangular image to the central 180-degree part.
-        
+
         Args:
             e_img (torch.Tensor): The 360-degree equirectangular image. Shape should
                 be: (B, H, W, C).
-        
+
         Returns:
             torch.Tensor: The cropped 180-degree equirectangular image. Shape will be:
                 (B, H, W//2, C) where the width is halved.
-        
+
         Raises:
             ValueError: If the input image width is less than or equal to 1.
         """
@@ -570,7 +574,10 @@ class StereoscopicToMonoScopic:
         return {
             "required": {
                 "image": ("IMAGE", {"default": None}),
-                "split_direction": (["horizontal", "vertical"], {"default": "horizontal"}),
+                "split_direction": (
+                    ["horizontal", "vertical"],
+                    {"default": "horizontal"},
+                ),
                 "larger_side": (["first", "second"], {"default": "first"}),
             },
         }
@@ -589,13 +596,16 @@ class StereoscopicToMonoScopic:
     CATEGORY = "pytorch360convert"
 
     def split_stereoscopic_image(
-        self, image: torch.Tensor, split_direction: str = "horizontal", larger_side: str = "first"
+        self,
+        image: torch.Tensor,
+        split_direction: str = "horizontal",
+        larger_side: str = "first",
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Splits a batch of tensor images (BHWC format) into two halves either vertically
         or horizontally,  splitting exactly down the middle. In case of odd dimensions,
         one side gets an extra pixel.
-        
+
         Args:
             image (torch.Tensor): The tensor image batch to split. Shape should be:
                 (B, H, W, C).
@@ -605,13 +615,13 @@ class StereoscopicToMonoScopic:
                 dimensions are odd. "first" gives the extra pixel to the first side
                 (top/left), "second" gives it to the second side (bottom/right).
                 Default: "first"
-        
+
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: A tuple containing the first and second
                 halves of the split images. The shape of each tensor is:
                 - For horizontal split: (B, H/2, W, C)
                 - For vertical split: (B, H, W/2, C)
-        
+
         Raises:
             ValueError: If `split_direction` is not "horizontal" or "vertical".
         """
@@ -622,8 +632,8 @@ class StereoscopicToMonoScopic:
             mid_point = height // 2
             if height % 2 != 0:  # If height is odd
                 if larger_side == "first":
-                    first_half = image[:, :mid_point + 1, :, :]
-                    second_half = image[:, mid_point + 1:, :, :]
+                    first_half = image[:, : mid_point + 1, :, :]
+                    second_half = image[:, mid_point + 1 :, :, :]
                 else:  # "second"
                     first_half = image[:, :mid_point, :, :]
                     second_half = image[:, mid_point:, :]
@@ -636,8 +646,8 @@ class StereoscopicToMonoScopic:
             mid_point = width // 2
             if width % 2 != 0:  # If width is odd
                 if larger_side == "first":
-                    first_half = image[:, :, :mid_point + 1, :]
-                    second_half = image[:, :, mid_point + 1:, :]
+                    first_half = image[:, :, : mid_point + 1, :]
+                    second_half = image[:, :, mid_point + 1 :, :]
                 else:  # "second"
                     first_half = image[:, :, :mid_point, :]
                     second_half = image[:, :, mid_point:, :]
@@ -646,7 +656,11 @@ class StereoscopicToMonoScopic:
                 first_half = image[:, :, :mid_point, :]
                 second_half = image[:, :, mid_point:, :]
         else:
-            raise ValueError("Invalid split direction. Please choose" + " 'horizontal' or 'vertical'. " + f"Got {split_direction}")
+            raise ValueError(
+                "Invalid split direction. Please choose"
+                + " 'horizontal' or 'vertical'. "
+                + f"Got {split_direction}"
+            )
 
         return (first_half, second_half)
 
@@ -662,26 +676,28 @@ class MonoScopicToStereoscopic:
             "required": {
                 "first_image": ("IMAGE", {"default": None}),
                 "second_image": ("IMAGE", {"default": None}),
-                "merge_direction": (["horizontal", "vertical"], {"default": "horizontal"}),
+                "merge_direction": (
+                    ["horizontal", "vertical"],
+                    {"default": "horizontal"},
+                ),
             },
         }
 
-    RETURN_TYPES = (
-        "IMAGE",
-    )
-    RETURN_NAMES = (
-        "Stereoscopic Image",
-    )
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Stereoscopic Image",)
 
     FUNCTION = "merge_monoscopic_to_stereoscopic"
 
     CATEGORY = "pytorch360convert"
 
     def merge_monoscopic_to_stereoscopic(
-        self, first_image: torch.Tensor, second_image: torch.Tensor, merge_direction: str = "horizontal"
+        self,
+        first_image: torch.Tensor,
+        second_image: torch.Tensor,
+        merge_direction: str = "horizontal",
     ) -> torch.Tensor:
         """
-        Merges two monoscopic images into a single stereoscopic image by concatenating 
+        Merges two monoscopic images into a single stereoscopic image by concatenating
         the two images either horizontally or vertically.
 
         Args:
@@ -703,22 +719,36 @@ class MonoScopicToStereoscopic:
         s_batch_size, s_height, s_width, s_channels = second_image.shape
 
         if merge_direction == "horizontal":
-            assert f_batch_size == s_batch_size, "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
-            assert f_height == s_height, "Height must match: " + f"{f_height} vs {s_height}"
-            assert f_channels == s_channels, "Channels must match: " + f"{f_channels} vs {s_channels}"
-            
+            assert f_batch_size == s_batch_size, (
+                "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            )
+            assert f_height == s_height, (
+                "Height must match: " + f"{f_height} vs {s_height}"
+            )
+            assert f_channels == s_channels, (
+                "Channels must match: " + f"{f_channels} vs {s_channels}"
+            )
+
             # Concatenate horizontally (by width)
             stereoscopic_image = torch.cat((first_image, second_image), dim=2)
-            
+
         elif merge_direction == "vertical":
-            assert f_batch_size == s_batch_size, "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            assert f_batch_size == s_batch_size, (
+                "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            )
             assert f_width == s_width, "Width must match: " + f"{f_width} vs {s_width}"
-            assert f_channels == s_channels, "Channels must match: " + f"{f_channels} vs {s_channels}"
-            
+            assert f_channels == s_channels, (
+                "Channels must match: " + f"{f_channels} vs {s_channels}"
+            )
+
             # Concatenate vertically (by height)
             stereoscopic_image = torch.cat((first_image, second_image), dim=1)
-            
+
         else:
-            raise ValueError("Invalid split direction. Please choose" + " 'horizontal' or 'vertical'. " + f"Got {merge_direction}")
+            raise ValueError(
+                "Invalid split direction. Please choose"
+                + " 'horizontal' or 'vertical'. "
+                + f"Got {merge_direction}"
+            )
 
         return (stereoscopic_image,)
