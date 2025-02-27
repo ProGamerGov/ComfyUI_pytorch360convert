@@ -510,3 +510,166 @@ class Pad180To360Node:
 
         e_img_padded = e_img_padded.permute(0, 2, 3, 1)
         return (e_img_padded, )
+
+
+class StereoscopicToMonoScopic:
+    """
+    Split a stereoscopic image into 2 monoscopic images.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "split_direction": (["horizontal", "vertical"], {"default": "horizontal"}),
+                "larger_side": (["first", "second"], {"default": "first"}),
+            },
+        }
+
+    RETURN_TYPES = (
+        "IMAGE",
+        "IMAGE",
+    )
+    RETURN_NAMES = (
+        "Image",
+        "Image",
+    )
+
+    FUNCTION = "split_stereoscopic_image"  # Set the function name here
+
+    CATEGORY = "pytorch360convert"
+
+    def split_stereoscopic_image(
+        self, image: torch.Tensor, split_direction: str = "horizontal", larger_side: str = "first"
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Splits a batch of tensor images (BHWC format) into two halves either vertically
+        or horizontally,  splitting exactly down the middle. In case of odd dimensions,
+        one side gets an extra pixel.
+        
+        Args:
+            image (torch.Tensor): The tensor image batch to split. Shape should be:
+                (B, H, W, C).
+            split_direction (str, optional): The direction to split the image. Either
+                "horizontal" or "vertical". Default: "horizontal"
+            larger_side (str, optional): Specifies which side gets the extra pixel when
+                dimensions are odd. "first" gives the extra pixel to the first side
+                (top/left), "second" gives it to the second side (bottom/right).
+                Default: "first"
+        
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: A tuple containing the first and second
+                halves of the split images. The shape of each tensor is:
+                - For horizontal split: (B, H/2, W, C)
+                - For vertical split: (B, H, W/2, C)
+        
+        Raises:
+            ValueError: If `split_direction` is not "horizontal" or "vertical".
+        """
+        _, height, width, channels = image.shape
+
+        if split_direction == "horizontal":
+            # Split horizontally (by height)
+            mid_point = height // 2
+            if height % 2 != 0:  # If height is odd
+                if larger_side == "first":
+                    first_half = image[:, :mid_point + 1, :, :]
+                    second_half = image[:, mid_point + 1:, :, :]
+                else:  # "second"
+                    first_half = image[:, :mid_point, :, :]
+                    second_half = image[:, mid_point:, :]
+            else:
+                # Even height, just split in the middle
+                first_half = image[:, :mid_point, :, :]
+                second_half = image[:, mid_point:, :]
+        elif split_direction == "vertical":
+            # Split vertically (by width)
+            mid_point = width // 2
+            if width % 2 != 0:  # If width is odd
+                if larger_side == "first":
+                    first_half = image[:, :, :mid_point + 1, :]
+                    second_half = image[:, :, mid_point + 1:, :]
+                else:  # "second"
+                    first_half = image[:, :, :mid_point, :]
+                    second_half = image[:, :, mid_point:, :]
+            else:
+                # Even width, just split in the middle
+                first_half = image[:, :, :mid_point, :]
+                second_half = image[:, :, mid_point:, :]
+        else:
+            raise ValueError("Invalid split direction. Please choose" + " 'horizontal' or 'vertical'. " + f"Got {split_direction}")
+
+        return first_half, second_half
+
+class MonoScopicToStereoscopic:
+    """
+    Merge two monoscopic images into a stereoscopic image.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "first_image": ("IMAGE", {"default": None}),
+                "second_image": ("IMAGE", {"default": None}),
+                "merge_direction": (["horizontal", "vertical"], {"default": "horizontal"}),
+            },
+        }
+
+    RETURN_TYPES = (
+        "IMAGE",
+    )
+    RETURN_NAMES = (
+        "Stereoscopic Image",
+    )
+
+    FUNCTION = "merge_monoscopic_to_stereoscopic"
+
+    CATEGORY = "pytorch360convert"
+
+    def merge_monoscopic_to_stereoscopic(
+        self, first_image: torch.Tensor, second_image: torch.Tensor, merge_direction: str = "horizontal"
+    ) -> torch.Tensor:
+        """
+        Merges two monoscopic images into a single stereoscopic image by concatenating 
+        the two images either horizontally or vertically.
+
+        Args:
+            first_image (torch.Tensor): The left monoscopic image. Shape should
+                be: (B, H, W, C).
+            second_image (torch.Tensor): The right monoscopic image. Shape should
+                be: (B, H, W, C).
+            merge_direction (str, optional): The direction to merge the images. Either
+                "horizontal" or "vertical". Default: "horizontal"
+
+        Returns:
+            torch.Tensor: The merged stereoscopic image.
+
+        Raises:
+            ValueError: If `merge_direction` is not "horizontal" or "vertical".
+        """
+
+        f_batch_size, f_height, f_width, f_channels = first_image.shape
+        s_batch_size, s_height, s_width, s_channels = second_image.shape
+
+        if merge_direction == "horizontal":
+            assert f_batch_size == s_batch_size, "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            assert f_height == s_height, "Height must match: " + f"{f_height} vs {s_height}"
+            assert f_channels == s_channels, "Channels must match: " + f"{f_channels} vs {s_channels}"
+            
+            # Concatenate horizontally (by width)
+            stereoscopic_image = torch.cat((first_image, second_image), dim=2)
+            
+        elif merge_direction == "vertical":
+            assert f_batch_size == s_batch_size, "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            assert f_width == s_width, "Width must match: " + f"{f_width} vs {s_width}"
+            assert f_channels == s_channels, "Channels must match: " + f"{f_channels} vs {s_channels}"
+            
+            # Concatenate vertically (by height)
+            stereoscopic_image = torch.cat((first_image, second_image), dim=1)
+            
+        else:
+            raise ValueError("Invalid split direction. Please choose" + " 'horizontal' or 'vertical'. " + f"Got {merge_direction}")
+
+        return (stereoscopic_image,)
