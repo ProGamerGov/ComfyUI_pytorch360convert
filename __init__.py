@@ -6,13 +6,13 @@ from .nodes import (
     E2CNode,
     E2ENode,
     E2PNode,
-    MonoScopicToStereo,
+    MonoScopicToStereoNode,
     Pad180To360Node,
     PasteImageWithCoordsNode,
     RollImageNode,
     SplitFacesNode,
     StackFacesNode,
-    StereoToMonoScopic,
+    StereoToMonoScopicNode,
 )
 
 NODE_CLASS_MAPPINGS = {
