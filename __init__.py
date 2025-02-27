@@ -30,7 +30,6 @@ NODE_CLASS_MAPPINGS = {
     "Crop 360 to 180 Equirectangular": Crop360To180Node,
     "Crop Stereo to Monoscopic": StereoToMonoScopic,
     "Merge Monoscopic into Stereo": MonoScopicToStereo,
-
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
