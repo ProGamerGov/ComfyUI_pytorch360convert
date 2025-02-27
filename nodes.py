@@ -16,8 +16,14 @@ class C2ENode:
                 "e_img": ("IMAGE", {"default": None}),
                 "h": ("INT", {"default": -1}),
                 "w": ("INT", {"default": -1}),
-                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
-                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_format": (
+                    ["stack", "dice", "horizon", "list", "dict"],
+                    {"default": "stack"},
+                ),
             },
         }
 
@@ -61,8 +67,14 @@ class E2CNode:
             "required": {
                 "e_img": ("IMAGE", {"default": None}),
                 "face_width": ("INT", {"default": -1}),
-                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
-                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_format": (
+                    ["stack", "dice", "horizon", "list", "dict"],
+                    {"default": "stack"},
+                ),
             },
         }
 
@@ -112,7 +124,10 @@ class E2PNode:
                 "out_h": ("INT", {"default": 512}),
                 "out_w": ("INT", {"default": 512}),
                 "in_rot_deg": ("FLOAT", {"default": 0.0}),
-                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
             },
         }
 
@@ -163,7 +178,10 @@ class E2ENode:
                 "roll": ("FLOAT", {"default": 0.0}),
                 "h_deg": ("FLOAT", {"default": 0.0}),
                 "v_deg": ("FLOAT", {"default": 0.0}),
-                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
             },
         }
 
@@ -312,8 +330,14 @@ class C2EMaskedDiffNode:
                 "original_faces": ("IMAGE", {"default": None}),
                 "modified_faces": ("IMAGE", {"default": None}),
                 "original_equi": ("IMAGE", {"default": None}),
-                "padding_mode": (["bilinear", "bicubic", "nearest"], {"default": "bilinear"}),
-                "cube_format": (["stack", "dice", "horizon", "list", "dict"], {"default": "stack"}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_format": (
+                    ["stack", "dice", "horizon", "list", "dict"],
+                    {"default": "stack"},
+                ),
             },
         }
 
@@ -452,3 +476,279 @@ class PasteImageWithCoordsNode:
         start_h, end_h, start_w, end_w = coords
         full_image[:, start_h:end_h, start_w:end_w, :] = cropped_image
         return (full_image,)
+
+
+class Pad180To360Node:
+    """
+    Apply padding to a 180 degree equirectangular image, to make it 360 degrees.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "fill_value": ("FLOAT", {"default": 0.0}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Padded 360 Image",)
+
+    FUNCTION = "pad_180_to_360_image"
+
+    CATEGORY = "pytorch360convert"
+
+    def pad_180_to_360_image(
+        self, e_img: torch.Tensor, fill_value: float = 0.0
+    ) -> Tuple[torch.Tensor]:
+        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
+        e_img = e_img.permute(0, 3, 1, 2)
+        H, W = e_img.shape[2:]
+        pad_left = W // 2
+        pad_right = W - pad_left
+
+        e_img_padded = torch.nn.functional.pad(
+            e_img, (pad_left, pad_right), mode="constant", value=fill_value
+        )
+
+        e_img_padded = e_img_padded.permute(0, 2, 3, 1)
+        return (e_img_padded,)
+
+
+class Crop360To180Node:
+    """
+    Crop a 360 degree equirectangular image to the central 180 degree part.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Cropped 180 Image",)
+
+    FUNCTION = "crop_360_to_180_image"
+
+    CATEGORY = "pytorch360convert"
+
+    def crop_360_to_180_image(self, e_img: torch.Tensor) -> Tuple[torch.Tensor]:
+        """
+        Crop a 360-degree equirectangular image to the central 180-degree part.
+
+        Args:
+            e_img (torch.Tensor): The 360-degree equirectangular image. Shape should
+                be: (B, H, W, C).
+
+        Returns:
+            torch.Tensor: The cropped 180-degree equirectangular image. Shape will be:
+                (B, H, W//2, C) where the width is halved.
+
+        Raises:
+            ValueError: If the input image width is less than or equal to 1.
+        """
+        assert e_img.dim() == 4, f"image should have 4 dimensions, got {e_img.dim()}"
+        _, _, width, _ = e_img.shape
+
+        # Crop the central 180-degree part by slicing the image.
+        crop_start = width // 4
+        crop_end = 3 * width // 4
+
+        # Crop along the width dimension (left and right 180 degrees)
+        cropped_img = e_img[:, :, crop_start:crop_end, :]
+
+        return (cropped_img,)
+
+
+class StereoToMonoScopic:
+    """
+    Split a stereo image into 2 monoscopic images.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "split_direction": (
+                    ["horizontal", "vertical"],
+                    {"default": "horizontal"},
+                ),
+                "larger_side": (["first", "second"], {"default": "first"}),
+            },
+        }
+
+    RETURN_TYPES = (
+        "IMAGE",
+        "IMAGE",
+    )
+    RETURN_NAMES = (
+        "First Image",
+        "Second Image",
+    )
+
+    FUNCTION = "split_stereo_image"
+
+    CATEGORY = "pytorch360convert"
+
+    def split_stereo_image(
+        self,
+        image: torch.Tensor,
+        split_direction: str = "horizontal",
+        larger_side: str = "first",
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Splits a batch of tensor images (BHWC format) into two halves either vertically
+        or horizontally,  splitting exactly down the middle. In case of odd dimensions,
+        one side gets an extra pixel.
+
+        Args:
+            image (torch.Tensor): The tensor image batch to split. Shape should be:
+                (B, H, W, C).
+            split_direction (str, optional): The direction to split the image. Either
+                "horizontal" or "vertical". Default: "horizontal"
+            larger_side (str, optional): Specifies which side gets the extra pixel when
+                dimensions are odd. "first" gives the extra pixel to the first side
+                (top/left), "second" gives it to the second side (bottom/right).
+                Default: "first"
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: A tuple containing the first and second
+                halves of the split images. The shape of each tensor is:
+                - For horizontal split: (B, H/2, W, C)
+                - For vertical split: (B, H, W/2, C)
+
+        Raises:
+            ValueError: If `split_direction` is not "horizontal" or "vertical".
+        """
+        _, height, width, channels = image.shape
+
+        if split_direction == "horizontal":
+            # Split horizontally (by height)
+            mid_point = height // 2
+            if height % 2 != 0:  # If height is odd
+                if larger_side == "first":
+                    first_half = image[:, : mid_point + 1, :, :]
+                    second_half = image[:, mid_point + 1 :, :, :]
+                else:  # "second"
+                    first_half = image[:, :mid_point, :, :]
+                    second_half = image[:, mid_point:, :]
+            else:
+                # Even height, just split in the middle
+                first_half = image[:, :mid_point, :, :]
+                second_half = image[:, mid_point:, :]
+        elif split_direction == "vertical":
+            # Split vertically (by width)
+            mid_point = width // 2
+            if width % 2 != 0:  # If width is odd
+                if larger_side == "first":
+                    first_half = image[:, :, : mid_point + 1, :]
+                    second_half = image[:, :, mid_point + 1 :, :]
+                else:  # "second"
+                    first_half = image[:, :, :mid_point, :]
+                    second_half = image[:, :, mid_point:, :]
+            else:
+                # Even width, just split in the middle
+                first_half = image[:, :, :mid_point, :]
+                second_half = image[:, :, mid_point:, :]
+        else:
+            raise ValueError(
+                "Invalid split direction. Please choose"
+                + " 'horizontal' or 'vertical'. "
+                + f"Got {split_direction}"
+            )
+
+        return (first_half, second_half)
+
+
+class MonoScopicToStereo:
+    """
+    Merge two monoscopic images into a stereo image.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "first_image": ("IMAGE", {"default": None}),
+                "second_image": ("IMAGE", {"default": None}),
+                "merge_direction": (
+                    ["horizontal", "vertical"],
+                    {"default": "horizontal"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Stereo Image",)
+
+    FUNCTION = "merge_monoscopic_to_stereo"
+
+    CATEGORY = "pytorch360convert"
+
+    def merge_monoscopic_to_stereo(
+        self,
+        first_image: torch.Tensor,
+        second_image: torch.Tensor,
+        merge_direction: str = "horizontal",
+    ) -> Tuple[torch.Tensor]:
+        """
+        Merges two monoscopic images into a single stereo image by concatenating
+        the two images either horizontally or vertically.
+
+        Args:
+            first_image (torch.Tensor): The left monoscopic image. Shape should
+                be: (B, H, W, C).
+            second_image (torch.Tensor): The right monoscopic image. Shape should
+                be: (B, H, W, C).
+            merge_direction (str, optional): The direction to merge the images. Either
+                "horizontal" or "vertical". Default: "horizontal"
+
+        Returns:
+            torch.Tensor: The merged stereo image.
+
+        Raises:
+            ValueError: If `merge_direction` is not "horizontal" or "vertical".
+        """
+
+        f_batch_size, f_height, f_width, f_channels = first_image.shape
+        s_batch_size, s_height, s_width, s_channels = second_image.shape
+
+        if merge_direction == "horizontal":
+            assert f_batch_size == s_batch_size, (
+                "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            )
+            assert f_height == s_height, (
+                "Height must match: " + f"{f_height} vs {s_height}"
+            )
+            assert f_channels == s_channels, (
+                "Channels must match: " + f"{f_channels} vs {s_channels}"
+            )
+
+            # Concatenate horizontally (by width)
+            stereo_image = torch.cat((first_image, second_image), dim=2)
+
+        elif merge_direction == "vertical":
+            assert f_batch_size == s_batch_size, (
+                "Batch size must match: " + f"{f_batch_size} vs {s_batch_size}"
+            )
+            assert f_width == s_width, "Width must match: " + f"{f_width} vs {s_width}"
+            assert f_channels == s_channels, (
+                "Channels must match: " + f"{f_channels} vs {s_channels}"
+            )
+
+            # Concatenate vertically (by height)
+            stereo_image = torch.cat((first_image, second_image), dim=1)
+
+        else:
+            raise ValueError(
+                "Invalid split direction. Please choose"
+                + " 'horizontal' or 'vertical'. "
+                + f"Got {merge_direction}"
+            )
+
+        return (stereo_image,)
