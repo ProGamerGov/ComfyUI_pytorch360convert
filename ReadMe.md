@@ -106,15 +106,15 @@ This is an experimental node for only pasting the modified parts of face images 
 
 This node pads a given 180 degree equirectangular image, so that it becomes a 360 degree equirectangular image.
 
-## Crop 360 to 180 Equirectangular
+### Crop 360 to 180 Equirectangular
 
 This node crops a 360 degree equirectangular image into a 180 degree equirectangular image.
 
-## Crop Stereo to Monoscopic
+### Crop Stereo to Monoscopic
 
 This node allows you to horizontally or vertically crop a 360 degree equirectangular image that is in stereo format or 3D format, into two separate monoscopic images.
 
-## "Merge Monoscopic into Stereo
+### "Merge Monoscopic into Stereo
 
 This node allows you to combine two separate monoscopic 360 degree images into a single stereo or 3D image.
 
