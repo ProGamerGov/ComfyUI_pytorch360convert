@@ -796,7 +796,6 @@ class ApplyCircularConvPaddingModel:
             use_model = model
         else:
             use_model = copy.deepcopy(model)
-
         _apply_circular_conv2d_padding(use_model.model, False, x_axis_only)
         return (use_model,)
 
