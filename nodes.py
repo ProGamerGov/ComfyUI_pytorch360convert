@@ -772,7 +772,7 @@ def _apply_circular_conv2d_padding(model: torch.nn.Module, is_vae: bool = False,
     return model
 
 
-class ApplyCircularModelConvPaddingXAxis:
+class ApplyCircularConvPaddingModel:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -801,7 +801,7 @@ class ApplyCircularModelConvPaddingXAxis:
         return (use_model,)
 
 
-class ApplyCircularVAEPaddingXAxis:
+class c:
     @classmethod
     def INPUT_TYPES(cls):
         return {
