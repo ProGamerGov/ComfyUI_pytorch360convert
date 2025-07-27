@@ -752,3 +752,78 @@ class MonoScopicToStereoNode:
             )
 
         return (stereo_image,)
+
+
+def _conv_forward(self, x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
+    x = torch.nn.functional.pad(x, self.padding_values_x, mode='circular')
+    x = torch.nn.functional.pad(x, self.padding_values_y, mode='constant')
+    return torch.nn.functional.conv2d(x, weight, bias, self.stride, (0, 0), self.dilation, self.groups)
+
+
+def _apply_circular_conv2d_padding(model: torch.nn.Module, is_vae: bool = False, x_axis_only: bool = True) -> torch.nn.Module:
+    for layer in (use_vae.first_stage_model.modules() if is_vae else model.modules()):
+        if isinstance(layer, torch.nn.Conv2d):
+            if x_axis_only:
+                layer.padding_values_x = (layer._reversed_padding_repeated_twice[0], layer._reversed_padding_repeated_twice[1], 0, 0)
+                layer.padding_values_y = (0, 0, layer._reversed_padding_repeated_twice[2], layer._reversed_padding_repeated_twice[3])
+                layer._conv_forward = _conv_forward.__get__(layer, torch.nn.Conv2d)
+            else:
+                layer.padding_mode = 'circular'
+    return model
+
+
+class ApplyCircularModelConvPaddingXAxis:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL", {"tooltip": "Model to add circular x-axis conv2d padding to."}),
+                "inplace": ("BOOLEAN", {"default": True, "tooltip": "Modify " +
+                "the already loaded model (True) or a copy of the model (False). " +
+                "If True, model will have to be reloaded to restore padding to " +
+                "the original values. Modifying inplace will use less memory."}),
+                "x_axis_only": ("BOOLEAN", {"default": True, "tooltip": "Apply" +
+                " circular padding only to the x-axis or to both the x and y axes."}),
+            },
+        }
+
+    CATEGORY = "pytorch360convert"
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "run"
+
+    def run(self, model: torch.nn.Module, inplace: bool = True, x_axis_only: bool = True) -> Tuple[torch.nn.Module]:
+        if inplace:
+            use_model = model
+        else:
+            use_model = copy.deepcopy(model)
+
+        _apply_circular_conv2d_padding(use_model.model, False, x_axis_only)
+        return (use_model,)
+
+
+class ApplyCircularVAEPaddingXAxis:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "vae": ("VAE", {"tooltip": "VAE to add circular x-axis conv2d padding to."}),
+                "inplace": ("BOOLEAN", {"default": True, "tooltip": "Modify " +
+                "the already loaded VAE (True) or a copy of the VAE (False). " +
+                "If True, VAE will have to be reloaded to restore padding to " +
+                "the original values. Modifying inplace will use less memory."}),
+                "x_axis_only": ("BOOLEAN", {"default": True, "tooltip": "Apply" +
+                " circular padding only to the x-axis or to both the x and y axes."}),
+            }
+        }
+
+    RETURN_TYPES = ("VAE",)
+    FUNCTION = "run"
+    CATEGORY = "pytorch360convert"
+
+    def run(self, vae: torch.nn.Module, inplace: bool = True, x_axis_only: bool = True) -> Tuple[torch.nn.Module]:
+        if inplace:
+            use_vae = vae
+        else:
+            use_vae = copy.deepcopy(vae)
+        _apply_circular_conv2d_padding(use_vae, True, x_axis_only)
+        return (use_vae,)
