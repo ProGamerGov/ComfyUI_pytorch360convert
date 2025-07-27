@@ -13,8 +13,8 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
-    ApplyCircularModelConvPaddingXAxis,
-    ApplyCircularVAEPaddingXAxis,
+    ApplyCircularConvPaddingModel,
+    ApplyCircularConvPaddingVAE,
 )
 
 NODE_CLASS_MAPPINGS = {
