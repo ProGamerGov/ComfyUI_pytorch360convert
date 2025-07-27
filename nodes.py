@@ -801,7 +801,7 @@ class ApplyCircularConvPaddingModel:
         return (use_model,)
 
 
-class c:
+class ApplyCircularConvPaddingVAE:
     @classmethod
     def INPUT_TYPES(cls):
         return {
