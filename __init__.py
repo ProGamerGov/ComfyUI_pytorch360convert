@@ -32,8 +32,8 @@ NODE_CLASS_MAPPINGS = {
     "Crop 360 to 180 Equirectangular": Crop360To180Node,
     "Crop Stereo to Monoscopic": StereoToMonoScopicNode,
     "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
-    "Apply Circular X-Axis Padding VAE": ApplyApplyCircularVAEPaddingXAxis,
-    "Apply Circular X-Axis Padding Model": ApplyCircularModelConvPaddingXAxis,
+    "Apply Circular Padding VAE": ApplyApplyCircularVAEPaddingXAxis,
+    "Apply Circular Padding Model": ApplyCircularModelConvPaddingXAxis,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -51,6 +51,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Crop 360 to 180 Equirectangular": "Crop 360 to 180 Equirectangular",
     "Crop Stereo to Monoscopic": "Crop Stereo to Monoscopic",
     "Merge Monoscopic into Stereo": "Merge Monoscopic into Stereo",
-    "Apply Circular X-Axis Padding VAE": "Apply Circular X-Axis Padding VAE",
-    "Apply Circular X-Axis Padding Model": "Apply Circular X-Axis Padding Model",
+    "Apply Circular Padding VAE": "Apply Circular Padding VAE",
+    "Apply Circular Padding Model": "Apply Circular Padding Model",
 }
