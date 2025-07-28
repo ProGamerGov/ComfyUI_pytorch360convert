@@ -1,4 +1,6 @@
 from .nodes import (
+    ApplyCircularConvPaddingModel,
+    ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
     Crop360To180Node,
@@ -13,8 +15,6 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
-    ApplyCircularConvPaddingModel,
-    ApplyCircularConvPaddingVAE,
 )
 
 NODE_CLASS_MAPPINGS = {
