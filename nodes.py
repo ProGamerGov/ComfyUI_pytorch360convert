@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple
 
 import torch
+import copy
 from pytorch360convert import c2e, e2c, e2e, e2p
 
 
@@ -761,7 +762,7 @@ def _conv_forward(self, x: torch.Tensor, weight: torch.Tensor, bias: torch.Tenso
 
 
 def _apply_circular_conv2d_padding(model: torch.nn.Module, is_vae: bool = False, x_axis_only: bool = True) -> torch.nn.Module:
-    for layer in (use_vae.first_stage_model.modules() if is_vae else model.modules()):
+    for layer in (model.first_stage_model.modules() if is_vae else model.modules()):
         if isinstance(layer, torch.nn.Conv2d):
             if x_axis_only:
                 layer.padding_values_x = (layer._reversed_padding_repeated_twice[0], layer._reversed_padding_repeated_twice[1], 0, 0)
