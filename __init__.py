@@ -1,4 +1,6 @@
 from .nodes import (
+    ApplyCircularConvPaddingModel,
+    ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
     Crop360To180Node,
@@ -30,6 +32,8 @@ NODE_CLASS_MAPPINGS = {
     "Crop 360 to 180 Equirectangular": Crop360To180Node,
     "Crop Stereo to Monoscopic": StereoToMonoScopicNode,
     "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
+    "Apply Circular Padding VAE": ApplyCircularConvPaddingVAE,
+    "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -47,4 +51,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Crop 360 to 180 Equirectangular": "Crop 360 to 180 Equirectangular",
     "Crop Stereo to Monoscopic": "Crop Stereo to Monoscopic",
     "Merge Monoscopic into Stereo": "Merge Monoscopic into Stereo",
+    "Apply Circular Padding VAE": "Apply Circular Padding VAE",
+    "Apply Circular Padding Model": "Apply Circular Padding Model",
 }

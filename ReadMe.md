@@ -114,9 +114,17 @@ This node crops a 360 degree equirectangular image into a 180 degree equirectang
 
 This node allows you to horizontally or vertically crop a 360 degree equirectangular image that is in stereo format or 3D format, into two separate monoscopic images.
 
-### "Merge Monoscopic into Stereo
+### Merge Monoscopic into Stereo
 
 This node allows you to combine two separate monoscopic 360 degree images into a single stereo or 3D image.
+
+### Apply Circular Padding Model
+
+This node allows you to apply circular padding to the x-axis of all Conv2d layers in a model. This can help with reducing the seam where the left and right sides of the image connect.
+
+### Apply Circular Padding VAE
+
+This node allows you to apply circular padding to the x-axis of all the Conv2d layers in a VAE. This can help with reducing the seam where the left and right sides of the image connect.
 
 ### Panorama Viewer
 
