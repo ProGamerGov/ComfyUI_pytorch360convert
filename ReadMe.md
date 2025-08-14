@@ -142,16 +142,17 @@ If you use this library in your research or project, please refer to the include
 
 ### BibTeX
 ```bibtex
-@misc{egan2024pytorch360convert,
-  title={PyTorch 360° Image Conversion Toolkit},
-  author={Egan, Ben},
-  year={2024},
-  publisher={GitHub},
-  howpublished={\url{https://github.com/ProGamerGov/pytorch360convert}}
+@software{Egan_ComfyUI_pytorch360convert_2025,
+  author = {Egan, Ben},
+  license = {MIT},
+  month = jan,
+  title = {{ComfyUI\_pytorch360convert}},
+  url = {https://github.com/ProGamerGov/ComfyUI_pytorch360convert},
+  year = {2025}
 }
 ```
 
 ### APA Style
 ```
-Egan, B. (2024). PyTorch 360° Image Conversion Toolkit [Computer software]. GitHub. https://github.com/ProGamerGov/pytorch360convert
+Egan, B. (2025). ComfyUI_pytorch360convert [Computer software]. https://github.com/ProGamerGov/ComfyUI_pytorch360convert
 ```
