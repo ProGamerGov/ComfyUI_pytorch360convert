@@ -1,0 +1,5 @@
+# Use LF for Python files
+*.py text eol=lf
+
+# Default everything to LF
+* text=auto eol=lf
