@@ -15,6 +15,7 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
+    CreateSeamMask,
 )
 
 NODE_CLASS_MAPPINGS = {
@@ -34,6 +35,7 @@ NODE_CLASS_MAPPINGS = {
     "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
     "Apply Circular Padding VAE": ApplyCircularConvPaddingVAE,
     "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
+    "Create Seam Mask": CreateSeamMask,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -53,4 +55,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Merge Monoscopic into Stereo": "Merge Monoscopic into Stereo",
     "Apply Circular Padding VAE": "Apply Circular Padding VAE",
     "Apply Circular Padding Model": "Apply Circular Padding Model",
+    "Create Seam Mask": "Create Seam Mask",
 }
