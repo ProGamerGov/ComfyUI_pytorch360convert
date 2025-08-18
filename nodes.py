@@ -302,7 +302,7 @@ class RollImageNode:
                 "image": ("IMAGE", {"default": None}),
                 "roll_x": ("INT", {"default": 0}),
                 "roll_y": ("INT", {"default": 0}),
-                "roll_x_by_50_percent": ("BOOLEAN", {"default": True, "tooltip": "Ignores roll_x and roll_y. Shifts image horizontally by 50%.",}),
+                "roll_x_by_50_percent": ("BOOLEAN", {"default": False, "tooltip": "Ignores roll_x and roll_y. Shifts image horizontally by 50%.",}),
             },
         }
 
