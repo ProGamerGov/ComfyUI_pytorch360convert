@@ -302,7 +302,13 @@ class RollImageNode:
                 "image": ("IMAGE", {"default": None}),
                 "roll_x": ("INT", {"default": 0}),
                 "roll_y": ("INT", {"default": 0}),
-                "roll_x_by_50_percent": ("BOOLEAN", {"default": False, "tooltip": "Ignores roll_x and roll_y. Shifts image horizontally by 50%.",}),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Ignores roll_x and roll_y. Shifts image horizontally by 50%.",
+                    },
+                ),
             },
         }
 
@@ -314,7 +320,11 @@ class RollImageNode:
     CATEGORY = "pytorch360convert"
 
     def roll_image(
-        self, image: torch.Tensor, roll_x: int = 0, roll_y: int = 0, roll_x_by_50_percent: bool = False
+        self,
+        image: torch.Tensor,
+        roll_x: int = 0,
+        roll_y: int = 0,
+        roll_x_by_50_percent: bool = False,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
         if roll_x_by_50_percent:

@@ -3,6 +3,7 @@ from .nodes import (
     ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
+    CreateSeamMask,
     Crop360To180Node,
     CropImageWithCoordsNode,
     E2CNode,
@@ -15,7 +16,6 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
-    CreateSeamMask,
 )
 
 NODE_CLASS_MAPPINGS = {
