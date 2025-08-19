@@ -1043,6 +1043,62 @@ class E2Face:
         return (output_batch,)
 
 
+def _create_centered_circle_mask(
+    x: torch.Tensor,
+    circle_radius: float,
+    feather: int = 0
+) -> torch.Tensor:
+    """
+    Create a centered circle mask with optional feathering.
+
+    Args:
+        x (torch.Tensor): Reference tensor with shape (B, C, H, W).
+                          The mask will copy device, dtype, and batch size from x.
+        circle_radius (float): Fraction (0.0–1.0) of max possible radius (min(H,W)/2).
+                               1.0 = circle touches edges.
+        feather (int): Feather width in pixels, extending outward from circle_radius.
+                       0 = hard edge, >0 = smooth falloff.
+
+    Returns:
+        torch.Tensor: Mask tensor of shape (1, C, H, W), values in [0.0, 1.0].
+    """
+    _, C, H, W = x.shape
+    size = min(H, W)
+
+    # Circle radius in pixels
+    max_radius = size / 2.0
+    inner_radius = circle_radius * max_radius
+    outer_radius = inner_radius + feather
+
+    # Coordinate grid
+    yy, xx = torch.meshgrid(
+        torch.arange(size, device=x.device),
+        torch.arange(size, device=x.device),
+        indexing="ij"
+    )
+    center = size // 2
+    dist = torch.sqrt((xx - center) ** 2 + (yy - center) ** 2)
+
+    # Base mask
+    mask = torch.zeros_like(dist, dtype=x.dtype, device=x.device)
+
+    # Inside circle = 1.0
+    mask[dist <= inner_radius] = 1.0
+
+    # Feather transition
+    if feather > 0:
+        transition_zone = (dist > inner_radius) & (dist <= outer_radius)
+        mask[transition_zone] = 1.0 - (dist[transition_zone] - inner_radius) / feather
+
+    # Expand to BCHW and center in full HxW
+    mask_full = torch.zeros((1, C, H, W), dtype=x.dtype, device=x.device)
+    y0 = (H - size) // 2
+    x0 = (W - size) // 2
+    mask_full[:, :, y0:y0+size, x0:x0+size] = mask
+
+    return mask_full
+
+
 class CreatePoleMask:
     """
     Create a pole mask for inpainting on equirectangular images.
@@ -1071,6 +1127,7 @@ class CreatePoleMask:
         image: torch.Tensor,
         circle_radius: float = 0.10,
         feather: int = 0,
+        mode: str = "face",
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
 
