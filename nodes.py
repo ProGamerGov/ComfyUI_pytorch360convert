@@ -976,3 +976,123 @@ class CreateSeamMask:
         image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
         seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width)
         return (seam_mask,)
+
+
+class E2Face:
+    """
+    Equirectangular to Face
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "e_img": ("IMAGE", {"default": None}),
+                "face_width": ("INT", {"default": -1}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_face": (
+                    ["Up", "Down", "Right", "Left", "Front", "Back"],
+                    {"default": "Front"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Face Image",)
+
+    FUNCTION = "e2face"
+
+    CATEGORY = "pytorch360convert"
+
+    def e2face(
+        self,
+        e_img: torch.Tensor,
+        face_width: int = -1,
+        padding_mode: str = "bilinear",
+        cube_face: str = "Front",
+    ) -> Tuple[torch.Tensor]:
+
+        B, H, W, C = e_img.shape
+        outputs = []
+
+        for i in range(B):
+            single_img = e_img[i]  # [H,W,C]
+            # Determine face width
+            face_w = H // 2 if face_width < 1 else face_width
+
+            # Convert single equirectangular image to cubemap dict
+            cubemap = e2c(
+                single_img,
+                face_w=face_w,
+                mode=padding_mode,
+                cube_format="dict",
+                channels_first=False,
+            )
+
+            # Pick requested face
+            face_tensor = cubemap[cube_face]  # [face_w, face_w, C]
+
+            outputs.append(face_tensor.unsqueeze(0))  # [1,H,W,C]
+
+        # Concatenate into [B,H,W,C]
+        output_batch = torch.cat(outputs, dim=0)
+        return (output_batch,)
+
+
+class CreatePoleMask:
+    """
+    Create a pole mask for inpainting on equirectangular images.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "circle_radius": ("FLOAT", {"default": 0.10}),
+                "feather": ("INT", {"default": 0}),
+                "mode": (["face", "equirectangular"], {"default": "face"}),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Seam Mask",)
+
+    FUNCTION = "run"
+
+    CATEGORY = "pytorch360convert"
+
+    def run(
+        self,
+        image: torch.Tensor,
+        circle_radius: float = 0.10,
+        feather: int = 0,
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
+
+        if mode == "face":
+            image = image.permute(0, 3, 1, 2)  # BHWC -> BCHW
+            output_mask = _create_centered_circle_mask(image, circle_radius, feather)
+            output_mask = output_mask
+        else:
+            for im in image:  # im: [H,W,C]
+                # Convert single equirectangular image to cubemap dict
+                cubemap = e2c(im, cube_format="dict", channels_first=False)
+
+                # Apply circle mask on Up and Down faces
+                for face in ["Up", "Down"]:
+                    face_tensor = cubemap[face]  # [H_face, W_face, C]
+                    face_tensor = face_tensor.unsqueeze(0)
+                    cubemap[face] = _create_centered_circle_mask(face_tensor, circle_radius, feather).squeeze(0)
+
+                # Convert back to equirectangular
+                new_equi = c2e(cubemap, cube_format="dict", channels_first=False).unsqueeze(0)  # add batch dim
+                output_mask.append(new_equi)
+
+            # Stack all results into a single tensor [B,H,W,C]
+            output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)  # BHWC -> BCHW
+
+        return (output_mask,)
