@@ -969,6 +969,7 @@ class CreateSeamMask:
         self,
         image: torch.Tensor,
         seam_mask_width: float = 0.10,
+        feather: int = 0,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, "Image should have 4 dimensions"
         _, H, W, _ = image.shape
