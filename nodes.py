@@ -302,6 +302,13 @@ class RollImageNode:
                 "image": ("IMAGE", {"default": None}),
                 "roll_x": ("INT", {"default": 0}),
                 "roll_y": ("INT", {"default": 0}),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Ignores roll_x and roll_y. Shifts image horizontally by 50%.",
+                    },
+                ),
             },
         }
 
@@ -313,9 +320,18 @@ class RollImageNode:
     CATEGORY = "pytorch360convert"
 
     def roll_image(
-        self, image: torch.Tensor, roll_x: int = 0, roll_y: int = 0
+        self,
+        image: torch.Tensor,
+        roll_x: int = 0,
+        roll_y: int = 0,
+        roll_x_by_50_percent: bool = False,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
+        if roll_x_by_50_percent:
+            _, H, W, _ = image.shape
+            px_half = W // 2
+            roll_y = 0
+            roll_x = px_half
         return (torch.roll(image, shifts=(roll_y, roll_x), dims=(1, 2)),)
 
 
@@ -877,3 +893,63 @@ class ApplyCircularConvPaddingVAE:
             use_vae = copy.deepcopy(vae)
         _apply_circular_conv2d_padding(use_vae, True, x_axis_only)
         return (use_vae,)
+
+
+def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10) -> torch.Tensor:
+    """
+    For a ComfyUI-style mask: shape [B, H, W], values 0 or 1.
+
+    Args:
+        x (torch.Tensor): input tensor with shape [B, H, W, C].
+        frac_width (float, optional): fraction of input width for the vertical strip.
+
+    Returns:
+        mask: torch.Tensor of shape [B, H, W] with float values 0.0 & 1.0.
+    """
+    # Extract batch, height, and width from x
+    B, H, W, _ = x.shape
+    strip = max(1, int(W * frac_width))
+    x0 = (W - strip) // 2
+    x1 = x0 + strip
+
+    # Create the mask with zeros
+    mask = torch.zeros((B, H, W), dtype=x.dtype, device=x.device)
+
+    # Fill the vertical strip with ones
+    mask[:, :, x0:x1] = 1.0
+
+    return mask
+
+
+class CreateSeamMask:
+    """
+    Create a seam mask for inpainting on equirectangular images.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "seam_mask_width": ("FLOAT", {"default": 0.10}),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Seam Mask",)
+
+    FUNCTION = "run"
+
+    CATEGORY = "pytorch360convert"
+
+    def run(
+        self,
+        image: torch.Tensor,
+        seam_mask_width: float = 0.10,
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, "Image should have 4 dimensions"
+        _, H, W, _ = image.shape
+        px_half = W // 2
+        image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
+        seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width)
+        return (seam_mask,)

@@ -3,6 +3,7 @@ from .nodes import (
     ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
+    CreateSeamMask,
     Crop360To180Node,
     CropImageWithCoordsNode,
     E2CNode,
@@ -34,6 +35,7 @@ NODE_CLASS_MAPPINGS = {
     "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
     "Apply Circular Padding VAE": ApplyCircularConvPaddingVAE,
     "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
+    "Create Seam Mask": CreateSeamMask,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -53,4 +55,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Merge Monoscopic into Stereo": "Merge Monoscopic into Stereo",
     "Apply Circular Padding VAE": "Apply Circular Padding VAE",
     "Apply Circular Padding Model": "Apply Circular Padding Model",
+    "Create Seam Mask": "Create Seam Mask",
 }
