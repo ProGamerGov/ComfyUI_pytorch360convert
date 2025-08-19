@@ -895,29 +895,51 @@ class ApplyCircularConvPaddingVAE:
         return (use_vae,)
 
 
-def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10) -> torch.Tensor:
+def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10, feather: int = 0) -> torch.Tensor:
     """
-    For a ComfyUI-style mask: shape [B, H, W], values 0 or 1.
-
+    For a ComfyUI-style mask: shape [B, H, W], values 0 or 1, with optional feathering.
+    
     Args:
         x (torch.Tensor): input tensor with shape [B, H, W, C].
         frac_width (float, optional): fraction of input width for the vertical strip.
-
+        feather (int, optional): pixel size of feathering on both sides of the mask.
+    
     Returns:
-        mask: torch.Tensor of shape [B, H, W] with float values 0.0 & 1.0.
+        mask: torch.Tensor of shape [B, H, W] with float values 0.0 to 1.0.
     """
     # Extract batch, height, and width from x
-    B, H, W, _ = x.shape
+    B, H, W, *_ = x.shape
+    
     strip = max(1, int(W * frac_width))
     x0 = (W - strip) // 2
     x1 = x0 + strip
-
+    
     # Create the mask with zeros
     mask = torch.zeros((B, H, W), dtype=x.dtype, device=x.device)
-
-    # Fill the vertical strip with ones
-    mask[:, :, x0:x1] = 1.0
-
+    
+    if feather <= 0:
+        mask[:, :, x0:x1] = 1.0
+    else:
+        # Create feathered mask
+        # Left feather region
+        left_feather_start = max(0, x0 - feather)
+        left_feather_end = x0
+        if left_feather_end > left_feather_start:
+            feather_steps = torch.linspace(0.0, 1.0, left_feather_end - left_feather_start,
+                                          dtype=x.dtype, device=x.device)
+            mask[:, :, left_feather_start:left_feather_end] = feather_steps[None, None, :]
+        
+        # Center region (full mask)
+        mask[:, :, x0:x1] = 1.0
+        
+        # Right feather region
+        right_feather_start = x1
+        right_feather_end = min(W, x1 + feather)
+        if right_feather_end > right_feather_start:
+            feather_steps = torch.linspace(1.0, 0.0, right_feather_end - right_feather_start,
+                                         dtype=x.dtype, device=x.device)
+            mask[:, :, right_feather_start:right_feather_end] = feather_steps[None, None, :]
+    
     return mask
 
 
@@ -932,6 +954,7 @@ class CreateSeamMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "seam_mask_width": ("FLOAT", {"default": 0.10}),
+                "feather": ("INT", {"default": 0}),
             },
         }
 
