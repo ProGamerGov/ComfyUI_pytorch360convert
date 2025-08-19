@@ -1136,21 +1136,23 @@ class CreatePoleMask:
             output_mask = _create_centered_circle_mask(image, circle_radius, feather)
             output_mask = output_mask
         else:
+            output_mask = []
             for im in image:  # im: [H,W,C]
                 # Convert single equirectangular image to cubemap dict
-                cubemap = e2c(im, cube_format="dict", channels_first=False)
+                cubemap = e2c(torch.zeros_like(im), cube_format="dict", channels_first=False)
 
                 # Apply circle mask on Up and Down faces
                 for face in ["Up", "Down"]:
                     face_tensor = cubemap[face]  # [H_face, W_face, C]
-                    face_tensor = face_tensor.unsqueeze(0)
-                    cubemap[face] = _create_centered_circle_mask(face_tensor, circle_radius, feather).squeeze(0)
+                    face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2) 
+                    face_tensor = _create_centered_circle_mask(face_tensor, circle_radius, feather)
+                    cubemap[face] = face_tensor.permute(0, 2, 3, 1).squeeze(0)
 
                 # Convert back to equirectangular
                 new_equi = c2e(cubemap, cube_format="dict", channels_first=False).unsqueeze(0)  # add batch dim
                 output_mask.append(new_equi)
 
             # Stack all results into a single tensor [B,H,W,C]
-            output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)  # BHWC -> BCHW
+            output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)
 
-        return (output_mask,)
+        return (output_mask[:, 0:1, ...],)
