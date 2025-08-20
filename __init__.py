@@ -18,6 +18,7 @@ from .nodes import (
     StereoToMonoScopicNode,
     CreatePoleMask,
     E2Face,
+    Face2E,
 )
 
 NODE_CLASS_MAPPINGS = {
@@ -39,7 +40,8 @@ NODE_CLASS_MAPPINGS = {
     "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
     "Create Seam Mask": CreateSeamMask,
     "Create Pole Mask": CreatePoleMask,
-    "Get Face From Equirectangular": E2Face,
+    "Equirectangular to Face": E2Face,
+    "Face to Equirectangular": Face2E,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -61,5 +63,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Apply Circular Padding Model": "Apply Circular Padding Model",
     "Create Seam Mask": "Create Seam Mask",
     "Create Pole Mask": "Create Pole Mask",
-    "Get Face From Equirectangular": "Get Face From Equirectangular",
+    "Equirectangular to Face": "Equirectangular to Face",
+    "Face to Equirectangular": "Face to Equirectangular",
 }
