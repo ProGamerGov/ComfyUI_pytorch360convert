@@ -52,6 +52,7 @@ class C2ENode:
                 h=h,
                 w=w,
                 cube_format=cube_format,
+                mode=padding_mode,
                 channels_first=False,
             ).unsqueeze(0),
         )
@@ -895,19 +896,23 @@ class ApplyCircularConvPaddingVAE:
         return (use_vae,)
 
 
-def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10) -> torch.Tensor:
+def _create_center_seam_mask(
+    x: torch.Tensor, frac_width: float = 0.10, feather: int = 0
+) -> torch.Tensor:
     """
-    For a ComfyUI-style mask: shape [B, H, W], values 0 or 1.
+    For a ComfyUI-style mask: shape [B, H, W], values 0 or 1, with optional feathering.
 
     Args:
         x (torch.Tensor): input tensor with shape [B, H, W, C].
         frac_width (float, optional): fraction of input width for the vertical strip.
+        feather (int, optional): pixel size of feathering on both sides of the mask.
 
     Returns:
-        mask: torch.Tensor of shape [B, H, W] with float values 0.0 & 1.0.
+        mask: torch.Tensor of shape [B, H, W] with float values 0.0 to 1.0.
     """
     # Extract batch, height, and width from x
-    B, H, W, _ = x.shape
+    B, H, W, *_ = x.shape
+
     strip = max(1, int(W * frac_width))
     x0 = (W - strip) // 2
     x1 = x0 + strip
@@ -915,8 +920,42 @@ def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10) -> torch
     # Create the mask with zeros
     mask = torch.zeros((B, H, W), dtype=x.dtype, device=x.device)
 
-    # Fill the vertical strip with ones
-    mask[:, :, x0:x1] = 1.0
+    if feather <= 0:
+        mask[:, :, x0:x1] = 1.0
+    else:
+        # Create feathered mask
+        # Left feather region
+        left_feather_start = max(0, x0 - feather)
+        left_feather_end = x0
+        if left_feather_end > left_feather_start:
+            feather_steps = torch.linspace(
+                0.0,
+                1.0,
+                left_feather_end - left_feather_start,
+                dtype=x.dtype,
+                device=x.device,
+            )
+            mask[:, :, left_feather_start:left_feather_end] = feather_steps[
+                None, None, :
+            ]
+
+        # Center region (full mask)
+        mask[:, :, x0:x1] = 1.0
+
+        # Right feather region
+        right_feather_start = x1
+        right_feather_end = min(W, x1 + feather)
+        if right_feather_end > right_feather_start:
+            feather_steps = torch.linspace(
+                1.0,
+                0.0,
+                right_feather_end - right_feather_start,
+                dtype=x.dtype,
+                device=x.device,
+            )
+            mask[:, :, right_feather_start:right_feather_end] = feather_steps[
+                None, None, :
+            ]
 
     return mask
 
@@ -932,6 +971,7 @@ class CreateSeamMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "seam_mask_width": ("FLOAT", {"default": 0.10}),
+                "feather": ("INT", {"default": 0}),
             },
         }
 
@@ -946,6 +986,7 @@ class CreateSeamMask:
         self,
         image: torch.Tensor,
         seam_mask_width: float = 0.10,
+        feather: int = 0,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, "Image should have 4 dimensions"
         _, H, W, _ = image.shape
@@ -953,3 +994,246 @@ class CreateSeamMask:
         image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
         seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width)
         return (seam_mask,)
+
+
+class E2Face:
+    """
+    Equirectangular to Face
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "e_img": ("IMAGE", {"default": None}),
+                "face_width": ("INT", {"default": -1}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_face": (
+                    ["Up", "Down", "Right", "Left", "Front", "Back"],
+                    {"default": "Front"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Face Image",)
+
+    FUNCTION = "run_e2face"
+
+    CATEGORY = "pytorch360convert"
+
+    def run_e2face(
+        self,
+        e_img: torch.Tensor,
+        face_width: int = -1,
+        padding_mode: str = "bilinear",
+        cube_face: str = "Front",
+    ) -> Tuple[torch.Tensor]:
+
+        B, H, W, C = e_img.shape
+        outputs = []
+
+        for i in range(B):
+            single_img = e_img[i]  # [H,W,C]
+            # Determine face width
+            face_w = H // 2 if face_width < 1 else face_width
+
+            # Convert single equirectangular image to cubemap dict
+            cubemap = e2c(
+                single_img,
+                face_w=face_w,
+                mode=padding_mode,
+                cube_format="dict",
+                channels_first=False,
+            )
+
+            # Pick requested face
+            face_tensor = cubemap[cube_face]  # [face_w, face_w, C]
+
+            outputs.append(face_tensor.unsqueeze(0))  # [1,H,W,C]
+
+        # Concatenate into [B,H,W,C]
+        output_batch = torch.cat(outputs, dim=0)
+        return (output_batch,)
+
+
+def _create_centered_circle_mask(
+    x: torch.Tensor, circle_radius: float, feather: int = 0
+) -> torch.Tensor:
+    """
+    Create a centered circle mask with optional feathering.
+
+    Args:
+        x (torch.Tensor): Reference tensor with shape (B, C, H, W).
+                          The mask will copy device, dtype, and batch size from x.
+        circle_radius (float): Fraction (0.0–1.0) of max possible radius (min(H,W)/2).
+                               1.0 = circle touches edges.
+        feather (int): Feather width in pixels, extending outward from circle_radius.
+                       0 = hard edge, >0 = smooth falloff.
+
+    Returns:
+        torch.Tensor: Mask tensor of shape (1, C, H, W), values in [0.0, 1.0].
+    """
+    _, C, H, W = x.shape
+    size = min(H, W)
+
+    # Circle radius in pixels
+    max_radius = size / 2.0
+    inner_radius = circle_radius * max_radius
+    outer_radius = inner_radius + feather
+
+    # Coordinate grid
+    yy, xx = torch.meshgrid(
+        torch.arange(size, device=x.device),
+        torch.arange(size, device=x.device),
+        indexing="ij",
+    )
+    center = size // 2
+    dist = torch.sqrt((xx - center) ** 2 + (yy - center) ** 2)
+
+    # Base mask
+    mask = torch.zeros_like(dist, dtype=x.dtype, device=x.device)
+
+    # Inside circle = 1.0
+    mask[dist <= inner_radius] = 1.0
+
+    # Feather transition
+    if feather > 0:
+        transition_zone = (dist > inner_radius) & (dist <= outer_radius)
+        mask[transition_zone] = 1.0 - (dist[transition_zone] - inner_radius) / feather
+
+    # Expand to BCHW and center in full HxW
+    mask_full = torch.zeros((1, C, H, W), dtype=x.dtype, device=x.device)
+    y0 = (H - size) // 2
+    x0 = (W - size) // 2
+    mask_full[:, :, y0 : y0 + size, x0 : x0 + size] = mask
+
+    return mask_full
+
+
+class CreatePoleMask:
+    """
+    Create a pole mask for inpainting on equirectangular images.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "circle_radius": ("FLOAT", {"default": 0.10}),
+                "feather": ("INT", {"default": 0}),
+                "mode": (["face", "equirectangular"], {"default": "face"}),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Seam Mask",)
+
+    FUNCTION = "run"
+
+    CATEGORY = "pytorch360convert"
+
+    def run(
+        self,
+        image: torch.Tensor,
+        circle_radius: float = 0.10,
+        feather: int = 0,
+        mode: str = "face",
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
+
+        if mode == "face":
+            image = image.permute(0, 3, 1, 2)  # BHWC -> BCHW
+            output_mask = _create_centered_circle_mask(image, circle_radius, feather)
+            output_mask = output_mask
+        else:
+            output_mask = []
+            for im in image:  # im: [H,W,C]
+                # Convert single equirectangular image to cubemap dict
+                cubemap = e2c(
+                    torch.zeros_like(im), cube_format="dict", channels_first=False
+                )
+
+                # Apply circle mask on Up and Down faces
+                for face in ["Up", "Down"]:
+                    face_tensor = cubemap[face]  # [H_face, W_face, C]
+                    face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2)
+                    face_tensor = _create_centered_circle_mask(
+                        face_tensor, circle_radius, feather
+                    )
+                    cubemap[face] = face_tensor.permute(0, 2, 3, 1).squeeze(0)
+
+                # Convert back to equirectangular
+                new_equi = c2e(
+                    cubemap, cube_format="dict", channels_first=False
+                ).unsqueeze(
+                    0
+                )  # add batch dim
+                output_mask.append(new_equi)
+
+            # Stack all results into a single tensor [B,H,W,C]
+            output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)
+
+        return (output_mask[:, 0:1, ...],)
+
+
+class Face2E:
+    """
+    Face To Equirectangular Node
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "face": (
+                    ["Up", "Down", "Front", "Right", "Left", "Back"],
+                    {"default": "Down"},
+                ),
+                "base_equi_color": ("FLOAT", {"default": 0.0}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Equirectangular Image",)
+
+    FUNCTION = "run_face2e"
+
+    CATEGORY = "pytorch360convert"
+
+    def run_face2e(
+        self,
+        image: torch.Tensor,
+        face: str = "Down",
+        base_equi_color: float = 0.0,
+        padding_mode: str = "bilinear",
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
+
+        output_image = []
+        for f_image in image:
+
+            cubemap_dict = {}
+            for face_name in ["Front", "Right", "Back", "Left", "Up", "Down"]:
+                if face_name != face:
+                    cubemap_dict[face_name] = torch.ones_like(f_image) * base_equi_color
+                else:
+                    cubemap_dict[face_name] = f_image
+            output_image += [
+                c2e(
+                    cubemap=cubemap_dict,
+                    cube_format="dict",
+                    mode=padding_mode,
+                    channels_first=False,
+                )
+            ]
+        return (torch.stack(output_image),)

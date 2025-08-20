@@ -3,12 +3,15 @@ from .nodes import (
     ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
+    CreatePoleMask,
     CreateSeamMask,
     Crop360To180Node,
     CropImageWithCoordsNode,
     E2CNode,
     E2ENode,
+    E2Face,
     E2PNode,
+    Face2E,
     MonoScopicToStereoNode,
     Pad180To360Node,
     PasteImageWithCoordsNode,
@@ -36,6 +39,9 @@ NODE_CLASS_MAPPINGS = {
     "Apply Circular Padding VAE": ApplyCircularConvPaddingVAE,
     "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
     "Create Seam Mask": CreateSeamMask,
+    "Create Pole Mask": CreatePoleMask,
+    "Equirectangular to Face": E2Face,
+    "Face to Equirectangular": Face2E,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -56,4 +62,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Apply Circular Padding VAE": "Apply Circular Padding VAE",
     "Apply Circular Padding Model": "Apply Circular Padding Model",
     "Create Seam Mask": "Create Seam Mask",
+    "Create Pole Mask": "Create Pole Mask",
+    "Equirectangular to Face": "Equirectangular to Face",
+    "Face to Equirectangular": "Face to Equirectangular",
 }
