@@ -52,6 +52,7 @@ class C2ENode:
                 h=h,
                 w=w,
                 cube_format=cube_format,
+                mode=padding_mode,
                 channels_first=False,
             ).unsqueeze(0),
         )
