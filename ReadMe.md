@@ -92,6 +92,8 @@ The E2E node rotates an equirectangular image along one or more axes (roll, pitc
 
 The Roll Image node rolls an image along the height dimension (y axis) or the width dimension (x axis). This can help make artifacts like seams more accessible. Note that y axis rotations are not correct for final equirectangular outputs. Use the E2E node instead for y axis rotations.
 
+If you set 'roll_x_by_50_percent' to True, then any x and y axis values are ignored, and the image is shifted horizontally to be 50%. This is equivalent to a 180 degree rotation on an equirectangular image.
+
 ### Crop Image with Coords & Paste Image with Coords
 
 These two nodes allow you to crop a section of an image out to make things like in-painting faster and more memory efficient, before pasting the cropped section back into the original image.
@@ -125,6 +127,22 @@ This node allows you to apply circular padding to the x-axis of all Conv2d layer
 ### Apply Circular Padding VAE
 
 This node allows you to apply circular padding to the x-axis of all the Conv2d layers in a VAE. This can help with reducing the seam where the left and right sides of the image connect.
+
+### Equirectangular to Face (E2Face)
+
+This node allows you to get a single face from an equirectangular image.
+
+### Face to Equirectangular (Face2E)
+
+This node allows you to create an equirectangular image from a single face.
+
+### CreatePoleMask
+
+This node allows you to create a circle shaped mask in the center of a face tensor if set the 'face' mode. If set to equirectangular mode, It creates a circle shaped center mask in the Up face and the Down face, and then builds those faces into an equirectangular output. Optional feathering can be be applies at the boundaries between the hard mask and the background.
+
+### CreateSeamMask
+
+This node allows you to create a vertical mask in the center of an equirectangular image that extends from top to bottom, and has a user specified width. When combined with the 'Roll Image Axes' node and 'roll_x_by_50_percent' set to True, you can move the seam/border of your equirectangular image to the center. Then you can use the mask to perform inpainting and masked compositing to erase any visible boundaries. Optional feathering can be be applies at the boundaries between the hard mask and the background.
 
 ### Panorama Viewer
 
