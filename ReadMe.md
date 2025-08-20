@@ -142,7 +142,7 @@ This node allows you to create a circle shaped mask in the center of a face tens
 
 ### CreateSeamMask
 
-This node allows you to create a vertical mask in the center of an equirectangular image that extends from top to bottom, and has a user specified width. When combined with the 'Roll Image Axes' node, you move the seam/border of your equirectangular image to the center, and then using inpainting to erase any visible boundaries. Optional feathering can be be applies at the boundaries between the hard mask and the background.
+This node allows you to create a vertical mask in the center of an equirectangular image that extends from top to bottom, and has a user specified width. When combined with the 'Roll Image Axes' node and 'roll_x_by_50_percent' set to True, you can move the seam/border of your equirectangular image to the center. Then you can use the mask to perform inpainting and masked compositing to erase any visible boundaries. Optional feathering can be be applies at the boundaries between the hard mask and the background.
 
 ### Panorama Viewer
 
