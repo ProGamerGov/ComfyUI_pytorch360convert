@@ -1156,3 +1156,54 @@ class CreatePoleMask:
             output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)
 
         return (output_mask[:, 0:1, ...],)
+
+
+class Face2ENode:
+    """
+    Face To Equirectangular Node
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "face": (
+                    ["Up", "Down", "Front", "Right", "Left", "Back"],
+                    {"default": "Down"},
+                    ),
+                "base_equi_color": ("FLOAT", {"default": 0.0}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("Equirectangular Image",)
+
+    FUNCTION = "face2e"
+
+    CATEGORY = "pytorch360convert"
+
+    def face2e(
+        self,
+        image: torch.Tensor,
+        face: str = "Down",
+        base_equi_color: float = 0.0,
+        padding_mode: str = "bilinear"
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
+
+        output_image = []
+        for f_image in image:
+
+            cubemap_dict = {}
+            for face_name in ['Front', 'Right', 'Back', 'Left', 'Up', 'Down']:
+                if face_name != face:
+                    cubemap_dict[face_name] = torch.ones_like(f_image) * base_equi_color
+                else:
+                    cubemap_dict[face_name] = f_image
+            output_image += [c2e(cubemap=cubemap_dict, cube_format="dict", mode=padding_mode, channels_first=False)]
+        return (torch.stack(output_image), )
