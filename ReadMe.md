@@ -126,6 +126,22 @@ This node allows you to apply circular padding to the x-axis of all Conv2d layer
 
 This node allows you to apply circular padding to the x-axis of all the Conv2d layers in a VAE. This can help with reducing the seam where the left and right sides of the image connect.
 
+### Equirectangular to Face (E2Face)
+
+This node allows you to get a single face from an equirectangular image.
+
+### Face to Equirectangular (Face2E)
+
+This node allows you to create an equirectangular image from a single face.
+
+### CreatePoleMask
+
+This node allows you to create a circle shaped mask in the center of a face tensor if set the 'face' mode. If set to equirectangular mode, It creates a circle shaped center mask in the Up face and the Down face, and then builds those faces into an equirectangular output. Optional feathering can be be applies at the boundaries between the hard mask and the background.
+
+### CreateSeamMask
+
+This node allows you to create a vertical mask in the center of an equirectangular image that extends from top to bottom, and has a user specified width. When combined with the 'Roll Image Axes' node, you move the seam/border of your equirectangular image to the center, and then using inpainting to erase any visible boundaries. Optional feathering can be be applies at the boundaries between the hard mask and the background.
+
 ### Panorama Viewer
 
 For viewing 360 images inside ComfyUI, see the [github.com/ProGamerGov/ComfyUI_preview360panorama](https://github.com/ProGamerGov/ComfyUI_preview360panorama) custom node.
