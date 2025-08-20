@@ -136,11 +136,11 @@ This node allows you to get a single face from an equirectangular image.
 
 This node allows you to create an equirectangular image from a single face.
 
-### CreatePoleMask
+### Create Pole Mask
 
 This node allows you to create a circle shaped mask in the center of a face tensor if set the 'face' mode. If set to equirectangular mode, It creates a circle shaped center mask in the Up face and the Down face, and then builds those faces into an equirectangular output. Optional feathering can be be applies at the boundaries between the hard mask and the background.
 
-### CreateSeamMask
+### Create Seam Mask
 
 This node allows you to create a vertical mask in the center of an equirectangular image that extends from top to bottom, and has a user specified width. When combined with the 'Roll Image Axes' node and 'roll_x_by_50_percent' set to True, you can move the seam/border of your equirectangular image to the center. Then you can use the mask to perform inpainting and masked compositing to erase any visible boundaries. Optional feathering can be be applies at the boundaries between the hard mask and the background.
 
