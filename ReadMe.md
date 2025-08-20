@@ -92,6 +92,8 @@ The E2E node rotates an equirectangular image along one or more axes (roll, pitc
 
 The Roll Image node rolls an image along the height dimension (y axis) or the width dimension (x axis). This can help make artifacts like seams more accessible. Note that y axis rotations are not correct for final equirectangular outputs. Use the E2E node instead for y axis rotations.
 
+If you set 'roll_x_by_50_percent' to True, then any x and y axis values are ignored, and the image is shifted horizontally to be 50%. This is equivalent to a 180 degree rotation on an equirectangular image.
+
 ### Crop Image with Coords & Paste Image with Coords
 
 These two nodes allow you to crop a section of an image out to make things like in-painting faster and more memory efficient, before pasting the cropped section back into the original image.
