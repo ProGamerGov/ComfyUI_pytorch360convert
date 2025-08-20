@@ -1004,11 +1004,11 @@ class E2Face:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("Face Image",)
 
-    FUNCTION = "e2face"
+    FUNCTION = "run_e2face"
 
     CATEGORY = "pytorch360convert"
 
-    def e2face(
+    def run_e2face(
         self,
         e_img: torch.Tensor,
         face_width: int = -1,
@@ -1158,7 +1158,7 @@ class CreatePoleMask:
         return (output_mask[:, 0:1, ...],)
 
 
-class Face2ENode:
+class Face2E:
     """
     Face To Equirectangular Node
     """
@@ -1183,11 +1183,11 @@ class Face2ENode:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("Equirectangular Image",)
 
-    FUNCTION = "face2e"
+    FUNCTION = "run_face2e"
 
     CATEGORY = "pytorch360convert"
 
-    def face2e(
+    def run_face2e(
         self,
         image: torch.Tensor,
         face: str = "Down",
