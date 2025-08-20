@@ -895,28 +895,30 @@ class ApplyCircularConvPaddingVAE:
         return (use_vae,)
 
 
-def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10, feather: int = 0) -> torch.Tensor:
+def _create_center_seam_mask(
+    x: torch.Tensor, frac_width: float = 0.10, feather: int = 0
+) -> torch.Tensor:
     """
     For a ComfyUI-style mask: shape [B, H, W], values 0 or 1, with optional feathering.
-    
+
     Args:
         x (torch.Tensor): input tensor with shape [B, H, W, C].
         frac_width (float, optional): fraction of input width for the vertical strip.
         feather (int, optional): pixel size of feathering on both sides of the mask.
-    
+
     Returns:
         mask: torch.Tensor of shape [B, H, W] with float values 0.0 to 1.0.
     """
     # Extract batch, height, and width from x
     B, H, W, *_ = x.shape
-    
+
     strip = max(1, int(W * frac_width))
     x0 = (W - strip) // 2
     x1 = x0 + strip
-    
+
     # Create the mask with zeros
     mask = torch.zeros((B, H, W), dtype=x.dtype, device=x.device)
-    
+
     if feather <= 0:
         mask[:, :, x0:x1] = 1.0
     else:
@@ -925,21 +927,35 @@ def _create_center_seam_mask(x: torch.Tensor, frac_width: float = 0.10, feather:
         left_feather_start = max(0, x0 - feather)
         left_feather_end = x0
         if left_feather_end > left_feather_start:
-            feather_steps = torch.linspace(0.0, 1.0, left_feather_end - left_feather_start,
-                                          dtype=x.dtype, device=x.device)
-            mask[:, :, left_feather_start:left_feather_end] = feather_steps[None, None, :]
-        
+            feather_steps = torch.linspace(
+                0.0,
+                1.0,
+                left_feather_end - left_feather_start,
+                dtype=x.dtype,
+                device=x.device,
+            )
+            mask[:, :, left_feather_start:left_feather_end] = feather_steps[
+                None, None, :
+            ]
+
         # Center region (full mask)
         mask[:, :, x0:x1] = 1.0
-        
+
         # Right feather region
         right_feather_start = x1
         right_feather_end = min(W, x1 + feather)
         if right_feather_end > right_feather_start:
-            feather_steps = torch.linspace(1.0, 0.0, right_feather_end - right_feather_start,
-                                         dtype=x.dtype, device=x.device)
-            mask[:, :, right_feather_start:right_feather_end] = feather_steps[None, None, :]
-    
+            feather_steps = torch.linspace(
+                1.0,
+                0.0,
+                right_feather_end - right_feather_start,
+                dtype=x.dtype,
+                device=x.device,
+            )
+            mask[:, :, right_feather_start:right_feather_end] = feather_steps[
+                None, None, :
+            ]
+
     return mask
 
 
@@ -1044,9 +1060,7 @@ class E2Face:
 
 
 def _create_centered_circle_mask(
-    x: torch.Tensor,
-    circle_radius: float,
-    feather: int = 0
+    x: torch.Tensor, circle_radius: float, feather: int = 0
 ) -> torch.Tensor:
     """
     Create a centered circle mask with optional feathering.
@@ -1074,7 +1088,7 @@ def _create_centered_circle_mask(
     yy, xx = torch.meshgrid(
         torch.arange(size, device=x.device),
         torch.arange(size, device=x.device),
-        indexing="ij"
+        indexing="ij",
     )
     center = size // 2
     dist = torch.sqrt((xx - center) ** 2 + (yy - center) ** 2)
@@ -1094,7 +1108,7 @@ def _create_centered_circle_mask(
     mask_full = torch.zeros((1, C, H, W), dtype=x.dtype, device=x.device)
     y0 = (H - size) // 2
     x0 = (W - size) // 2
-    mask_full[:, :, y0:y0+size, x0:x0+size] = mask
+    mask_full[:, :, y0 : y0 + size, x0 : x0 + size] = mask
 
     return mask_full
 
@@ -1139,17 +1153,25 @@ class CreatePoleMask:
             output_mask = []
             for im in image:  # im: [H,W,C]
                 # Convert single equirectangular image to cubemap dict
-                cubemap = e2c(torch.zeros_like(im), cube_format="dict", channels_first=False)
+                cubemap = e2c(
+                    torch.zeros_like(im), cube_format="dict", channels_first=False
+                )
 
                 # Apply circle mask on Up and Down faces
                 for face in ["Up", "Down"]:
                     face_tensor = cubemap[face]  # [H_face, W_face, C]
-                    face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2) 
-                    face_tensor = _create_centered_circle_mask(face_tensor, circle_radius, feather)
+                    face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2)
+                    face_tensor = _create_centered_circle_mask(
+                        face_tensor, circle_radius, feather
+                    )
                     cubemap[face] = face_tensor.permute(0, 2, 3, 1).squeeze(0)
 
                 # Convert back to equirectangular
-                new_equi = c2e(cubemap, cube_format="dict", channels_first=False).unsqueeze(0)  # add batch dim
+                new_equi = c2e(
+                    cubemap, cube_format="dict", channels_first=False
+                ).unsqueeze(
+                    0
+                )  # add batch dim
                 output_mask.append(new_equi)
 
             # Stack all results into a single tensor [B,H,W,C]
@@ -1171,7 +1193,7 @@ class Face2E:
                 "face": (
                     ["Up", "Down", "Front", "Right", "Left", "Back"],
                     {"default": "Down"},
-                    ),
+                ),
                 "base_equi_color": ("FLOAT", {"default": 0.0}),
                 "padding_mode": (
                     ["bilinear", "bicubic", "nearest"],
@@ -1192,7 +1214,7 @@ class Face2E:
         image: torch.Tensor,
         face: str = "Down",
         base_equi_color: float = 0.0,
-        padding_mode: str = "bilinear"
+        padding_mode: str = "bilinear",
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"Image should have 4 dimensions, got {image.shape}"
 
@@ -1200,10 +1222,17 @@ class Face2E:
         for f_image in image:
 
             cubemap_dict = {}
-            for face_name in ['Front', 'Right', 'Back', 'Left', 'Up', 'Down']:
+            for face_name in ["Front", "Right", "Back", "Left", "Up", "Down"]:
                 if face_name != face:
                     cubemap_dict[face_name] = torch.ones_like(f_image) * base_equi_color
                 else:
                     cubemap_dict[face_name] = f_image
-            output_image += [c2e(cubemap=cubemap_dict, cube_format="dict", mode=padding_mode, channels_first=False)]
-        return (torch.stack(output_image), )
+            output_image += [
+                c2e(
+                    cubemap=cubemap_dict,
+                    cube_format="dict",
+                    mode=padding_mode,
+                    channels_first=False,
+                )
+            ]
+        return (torch.stack(output_image),)

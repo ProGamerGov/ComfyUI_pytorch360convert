@@ -3,12 +3,15 @@ from .nodes import (
     ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
+    CreatePoleMask,
     CreateSeamMask,
     Crop360To180Node,
     CropImageWithCoordsNode,
     E2CNode,
     E2ENode,
+    E2Face,
     E2PNode,
+    Face2E,
     MonoScopicToStereoNode,
     Pad180To360Node,
     PasteImageWithCoordsNode,
@@ -16,9 +19,6 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
-    CreatePoleMask,
-    E2Face,
-    Face2E,
 )
 
 NODE_CLASS_MAPPINGS = {
