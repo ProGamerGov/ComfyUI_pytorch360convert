@@ -1194,7 +1194,7 @@ class CreatePoleMask:
             # Stack all results into a single tensor [B,H,W,C]
             output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)
 
-        return (output_mask[:, 0:1, ...],)
+        return (output_mask[:, 0, ...],)
 
 
 class Face2E:
@@ -1347,14 +1347,14 @@ class FaceMask2E:
                 if face_name != face:
                     cubemap_dict[face_name] = torch.ones_like(f_mask) * base_equi_color
                 else:
-                    cubemap_dict[face_name] = mask.reshape(-1, 1, *mask.shape[1:])
+                    cubemap_dict[face_name] = mask.reshape(1, *mask.shape[1:])
             output_mask += [
                 c2e(
                     cubemap=cubemap_dict,
                     cube_format="dict",
                     mode=padding_mode,
                     channels_first=True,
-                )[:, 0, ...]
+                )
             ]
         return (torch.cat(output_mask),)
 
