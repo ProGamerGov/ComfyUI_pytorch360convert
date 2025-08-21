@@ -1247,3 +1247,48 @@ class Face2E:
                 )
             ]
         return (torch.stack(output_image),)
+
+
+ class RollMaskNode:
+    """
+    Roll a mask to make face seams easier to remove or access.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "mask": ("MASK", {"default": None}),
+                "roll_x": ("INT", {"default": 0}),
+                "roll_y": ("INT", {"default": 0}),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Shifts the input mask horizontally by 50%." + " Equivalent to a 180 degree rotation on an equirectangular image.",
+                    },
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Rolled Mask",)
+
+    FUNCTION = "roll_mask"
+
+    CATEGORY = "pytorch360convert"
+
+    def roll_mask(
+        self,
+        mask: torch.Tensor,
+        roll_x: int = 0,
+        roll_y: int = 0,
+        roll_x_by_50_percent: bool = False,
+    ) -> Tuple[torch.Tensor]:
+        assert mask.dim() == 3, f"mask should have 3 dimensions, got {mask.dim()}"
+        if roll_x_by_50_percent:
+            _, H, W = mask.shape
+            px_half = W // 2
+            roll_y = 0
+            roll_x = px_half
+        return (torch.roll(image, shifts=(roll_y, roll_x), dims=(1, 2)),)
