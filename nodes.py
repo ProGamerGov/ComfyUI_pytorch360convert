@@ -978,6 +978,7 @@ class CreateSeamMask:
                         "default": False,
                         "tooltip": "Shifts the output mask horizontally by 50%." + " Equivalent to a 180 degree rotation on an equirectangular image.",
                     },
+                ),
             },
         }
 
@@ -1001,7 +1002,7 @@ class CreateSeamMask:
         seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width, feather=feather)
         
         if roll_x_by_50_percent:
-            seam_mask = torch.roll(seam_mask, shifts=(0, px_half), dims=(2, 3))
+            seam_mask = torch.roll(seam_mask, shifts=(0, px_half), dims=(1, 2))
         return (seam_mask,)
 
 
