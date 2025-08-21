@@ -1345,7 +1345,7 @@ class FaceMask2E:
             cubemap_dict = {}
             for face_name in ["Front", "Right", "Back", "Left", "Up", "Down"]:
                 if face_name != face:
-                    cubemap_dict[face_name] = torch.ones_like(f_mask)  * base_equi_color
+                    cubemap_dict[face_name] = torch.ones_like(f_mask) * base_equi_color
                 else:
                     cubemap_dict[face_name] = mask.reshape(-1, 1, *mask.shape[1:])
             output_mask += [
@@ -1400,7 +1400,7 @@ class EMask2Face:
         outputs = []
 
         for i in range(B):
-            singlmask = mask[i:i+1][..., None] # [H,W,C]
+            singlmask = mask[i : i + 1][..., None]  # [H,W,C]
             # Determine face width
             face_w = H // 2 if face_width < 1 else face_width
 
