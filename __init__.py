@@ -30,7 +30,7 @@ NODE_CLASS_MAPPINGS = {
     "Equirectangular to Face": E2Face,
     "Equirectangular Mask to Face": EMask2Face,
     "Face to Equirectangular": Face2E,
-    "Face Mask to Equirectangular": Face2EMask,
+    "Face Mask to Equirectangular": FaceMask2E,
     # Equirectangular Full
     "Cubemap to Equirectangular": C2ENode,
     "Equirectangular to Cubemap": E2CNode,
