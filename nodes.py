@@ -971,7 +971,18 @@ class CreateSeamMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "seam_mask_width": ("FLOAT", {"default": 0.10}),
-                "feather": ("INT", {"default": 0}),
+                "feather": (
+                    "INT",
+                    {"default": 0, "tooltip": "Pixel size of the feathering."},
+                ),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Shifts the output mask horizontally by 50%."
+                        + " Equivalent to a 180 degree rotation on an equirectangular image.",
+                    },
+                ),
             },
         }
 
@@ -987,12 +998,17 @@ class CreateSeamMask:
         image: torch.Tensor,
         seam_mask_width: float = 0.10,
         feather: int = 0,
+        roll_x_by_50_percent: bool = False,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, "Image should have 4 dimensions"
         _, H, W, _ = image.shape
         px_half = W // 2
-        image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
-        seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width, feather=feather)
+        seam_mask = _create_center_seam_mask(
+            image, frac_width=seam_mask_width, feather=feather
+        )
+
+        if roll_x_by_50_percent:
+            seam_mask = torch.roll(seam_mask, shifts=(0, px_half), dims=(1, 2))
         return (seam_mask,)
 
 
@@ -1237,3 +1253,49 @@ class Face2E:
                 )
             ]
         return (torch.stack(output_image),)
+
+
+class RollMaskNode:
+    """
+    Roll a mask to make face seams easier to remove or access.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "mask": ("MASK", {"default": None}),
+                "roll_x": ("INT", {"default": 0}),
+                "roll_y": ("INT", {"default": 0}),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Shifts the input mask horizontally by 50%."
+                        + " Equivalent to a 180 degree rotation on an equirectangular image.",
+                    },
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Rolled Mask",)
+
+    FUNCTION = "roll_mask"
+
+    CATEGORY = "pytorch360convert"
+
+    def roll_mask(
+        self,
+        mask: torch.Tensor,
+        roll_x: int = 0,
+        roll_y: int = 0,
+        roll_x_by_50_percent: bool = False,
+    ) -> Tuple[torch.Tensor]:
+        assert mask.dim() == 3, f"mask should have 3 dimensions, got {mask.dim()}"
+        if roll_x_by_50_percent:
+            _, H, W = mask.shape
+            px_half = W // 2
+            roll_y = 0
+            roll_x = px_half
+        return (torch.roll(mask, shifts=(roll_y, roll_x), dims=(1, 2)),)
