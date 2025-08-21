@@ -1341,7 +1341,7 @@ class FaceMask2E:
 
         output_mask = []
         for f_mask in mask:
-            f_mask = f_mask = f_mask[None, None, ...]
+            f_mask = f_mask = f_mask[None, ...]
             cubemap_dict = {}
             for face_name in ["Front", "Right", "Back", "Left", "Up", "Down"]:
                 if face_name != face:
