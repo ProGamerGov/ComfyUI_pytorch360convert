@@ -14,6 +14,7 @@ from .nodes import (
     EMask2Face,
     Face2E,
     FaceMask2E,
+    MaskE2ENode,
     MonoScopicToStereoNode,
     Pad180To360Node,
     PasteImageWithCoordsNode,
@@ -35,6 +36,7 @@ NODE_CLASS_MAPPINGS = {
     "Equirectangular to Cubemap": E2CNode,
     "Equirectangular to Perspective": E2PNode,
     "Equirectangular Rotation": E2ENode,
+    "Mask Equirectangular Rotation": MaskE2ENode,
     "Pad 180 to 360 Equirectangular": Pad180To360Node,
     "Crop 360 to 180 Equirectangular": Crop360To180Node,
     # Cubemap
@@ -68,6 +70,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Equirectangular to Cubemap": "Equirectangular to Cubemap",
     "Equirectangular to Perspective": "Equirectangular to Perspective",
     "Equirectangular Rotation": "Equirectangular Rotation",
+    "Mask Equirectangular Rotation": "Mask Equirectangular Rotation",
     "Pad 180 to 360 Equirectangular": "Pad 180 to 360 Equirectangular",
     "Crop 360 to 180 Equirectangular": "Crop 360 to 180 Equirectangular",
     # Cubemap
