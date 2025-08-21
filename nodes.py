@@ -1249,7 +1249,7 @@ class Face2E:
         return (torch.stack(output_image),)
 
 
- class RollMaskNode:
+class RollMaskNode:
     """
     Roll a mask to make face seams easier to remove or access.
     """
