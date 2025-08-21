@@ -992,7 +992,7 @@ class CreateSeamMask:
         _, H, W, _ = image.shape
         px_half = W // 2
         image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
-        seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width)
+        seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width, feather=feather)
         return (seam_mask,)
 
 
