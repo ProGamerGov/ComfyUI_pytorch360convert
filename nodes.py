@@ -1194,7 +1194,7 @@ class CreatePoleMask:
             # Stack all results into a single tensor [B,H,W,C]
             output_mask = torch.cat(output_mask).permute(0, 3, 1, 2)
 
-        return (output_mask[:, 0:1, ...],)
+        return (output_mask[:, 0, ...],)
 
 
 class Face2E:
@@ -1299,3 +1299,173 @@ class RollMaskNode:
             roll_y = 0
             roll_x = px_half
         return (torch.roll(mask, shifts=(roll_y, roll_x), dims=(1, 2)),)
+
+
+class FaceMask2E:
+    """
+    Face Mask To Equirectangular
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "mask": ("MASK", {"default": None}),
+                "face": (
+                    ["Up", "Down", "Front", "Right", "Left", "Back"],
+                    {"default": "Down"},
+                ),
+                "base_equi_color": ("FLOAT", {"default": 0.0}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Equirectangular Mask",)
+
+    FUNCTION = "run_facemask2e"
+
+    CATEGORY = "pytorch360convert"
+
+    def run_facemask2e(
+        self,
+        mask: torch.Tensor,
+        face: str = "Down",
+        base_equi_color: float = 0.0,
+        padding_mode: str = "bilinear",
+    ) -> Tuple[torch.Tensor]:
+        assert mask.dim() == 3, f"Image should have 3 dimensions, got {mask.shape}"
+
+        output_mask = []
+        for f_mask in mask:
+            f_mask = f_mask = f_mask[None, ...]
+            cubemap_dict = {}
+            for face_name in ["Front", "Right", "Back", "Left", "Up", "Down"]:
+                if face_name != face:
+                    cubemap_dict[face_name] = torch.ones_like(f_mask) * base_equi_color
+                else:
+                    cubemap_dict[face_name] = mask.reshape(1, *mask.shape[1:])
+            output_mask += [
+                c2e(
+                    cubemap=cubemap_dict,
+                    cube_format="dict",
+                    mode=padding_mode,
+                    channels_first=True,
+                )
+            ]
+        return (torch.cat(output_mask),)
+
+
+class EMask2Face:
+    """
+    Equirectangular Mask to Face
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "mask": ("MASK", {"default": None}),
+                "face_width": ("INT", {"default": -1}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+                "cube_face": (
+                    ["Up", "Down", "Right", "Left", "Front", "Back"],
+                    {"default": "Front"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Face MASK",)
+
+    FUNCTION = "run_emask2face"
+
+    CATEGORY = "pytorch360convert"
+
+    def run_emask2face(
+        self,
+        mask: torch.Tensor,
+        face_width: int = -1,
+        padding_mode: str = "bilinear",
+        cube_face: str = "Front",
+    ) -> Tuple[torch.Tensor]:
+
+        B, H, W = mask.shape
+        outputs = []
+
+        for i in range(B):
+            singlmask = mask[i : i + 1][..., None]  # [H,W,C]
+            # Determine face width
+            face_w = H // 2 if face_width < 1 else face_width
+
+            # Convert single equirectangular mask to cubemap dict
+            cubemap = e2c(
+                singlmask,
+                face_w=face_w,
+                mode=padding_mode,
+                cube_format="dict",
+                channels_first=False,
+            )
+
+            # Pick requested face
+            face_tensor = cubemap[cube_face]  # [face_w, face_w, C]
+
+            outputs.append(face_tensor)  # [1,H,W,C]
+
+        # Concatenate into [B,H,W,C]
+        output_batch = torch.cat(outputs, dim=0)[..., 0]
+        return (output_batch,)
+
+
+class MaskE2ENode:
+    """
+    Mask Equirectangular Rotation
+    """
+
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "mask": ("MASK", {"default": None}),
+                "roll": ("FLOAT", {"default": 0.0}),
+                "h_deg": ("FLOAT", {"default": 0.0}),
+                "v_deg": ("FLOAT", {"default": 0.0}),
+                "padding_mode": (
+                    ["bilinear", "bicubic", "nearest"],
+                    {"default": "bilinear"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Rotated Mask",)
+
+    FUNCTION = "mask_e2e"
+
+    CATEGORY = "pytorch360convert"
+
+    def mask_e2e(
+        self,
+        mask: torch.Tensor,
+        roll: float = 0.0,
+        h_deg: float = 0.0,
+        v_deg: float = 0.0,
+        padding_mode: str = "bilinear",
+    ) -> Tuple[torch.Tensor]:
+        assert mask.dim() == 3, f"mask should have 3 dimensions, got {mask.dim()}"
+        return (
+            e2e(
+                e_img=mask[..., None],
+                h_deg=h_deg,
+                v_deg=v_deg,
+                roll=roll,
+                mode=padding_mode,
+                channels_first=False,
+            )[..., 0],
+        )

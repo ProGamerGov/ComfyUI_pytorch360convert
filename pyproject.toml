@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-pytorch360convert"
 description = "A collection of custom nodes for working with and converting between and working with 360 degree equirectangular images, cubemap, and perspective images. Also includes Circular padding Conv2d options for models and VAEs, along with nodes to fix seams and polar artifacts. Panoramic 360 images are also sometimes known as VR photography (virtual reality), HDRI environments (ex: skyboxes), image spheres, spherical images, 360 pano."
-version = "1.0.9"
+version = "1.1.0"
 license = {file = "LICENSE"}
 dependencies = ["pytorch360convert"]
 
