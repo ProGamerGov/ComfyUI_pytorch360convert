@@ -1443,7 +1443,7 @@ class MaskE2ENode:
             },
         }
 
-    RETURN_TYPES = ("Mask",)
+    RETURN_TYPES = ("MASK",)
     RETURN_NAMES = ("Rotated Mask",)
 
     FUNCTION = "mask_e2e"
