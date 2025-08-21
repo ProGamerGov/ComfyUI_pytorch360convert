@@ -16,6 +16,7 @@ from .nodes import (
     Pad180To360Node,
     PasteImageWithCoordsNode,
     RollImageNode,
+    RollMaskNode,
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
@@ -42,6 +43,7 @@ NODE_CLASS_MAPPINGS = {
     "Create Pole Mask": CreatePoleMask,
     "Equirectangular to Face": E2Face,
     "Face to Equirectangular": Face2E,
+    "Roll Mask Axes": RollMaskNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -65,4 +67,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Create Pole Mask": "Create Pole Mask",
     "Equirectangular to Face": "Equirectangular to Face",
     "Face to Equirectangular": "Face to Equirectangular",
+    "Roll Mask Axes": "Roll Mask Axes",
 }
