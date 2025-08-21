@@ -1298,4 +1298,4 @@ class RollMaskNode:
             px_half = W // 2
             roll_y = 0
             roll_x = px_half
-        return (torch.roll(image, shifts=(roll_y, roll_x), dims=(1, 2)),)
+        return (torch.roll(mask, shifts=(roll_y, roll_x), dims=(1, 2)),)
