@@ -971,7 +971,13 @@ class CreateSeamMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "seam_mask_width": ("FLOAT", {"default": 0.10}),
-                "feather": ("INT", {"default": 0}),
+                "feather": ("INT", {"default": 0, "tooltip": "Pixel size of the feathering."}),
+                "roll_x_by_50_percent": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Shifts the output mask horizontally by 50%." + " Equivalent to a 180 degree rotation on an equirectangular image.",
+                    },
             },
         }
 
@@ -987,12 +993,15 @@ class CreateSeamMask:
         image: torch.Tensor,
         seam_mask_width: float = 0.10,
         feather: int = 0,
+        roll_x_by_50_percent: bool = False,
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, "Image should have 4 dimensions"
         _, H, W, _ = image.shape
         px_half = W // 2
-        image_rolled = torch.roll(image, shifts=(0, px_half), dims=(1, 2))
         seam_mask = _create_center_seam_mask(image, frac_width=seam_mask_width, feather=feather)
+        
+        if roll_x_by_50_percent:
+            seam_mask = torch.roll(seam_mask, shifts=(0, px_half), dims=(2, 3))
         return (seam_mask,)
 
 
