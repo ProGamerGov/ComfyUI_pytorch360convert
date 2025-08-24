@@ -1477,6 +1477,10 @@ class Create180To360Mask:
         return {
             "required": {
                 "image": ("IMAGE", {"default": None}),
+                "input_mode": (
+                    ["360", "180"],
+                    {"default": "180"},
+                ),
             },
         }
 
@@ -1490,10 +1494,12 @@ class Create180To360Mask:
     def mask_180_to_360(self, image: torch.Tensor) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
         _, H, W, _ = image.shape
+        if mode == "360":
+            W = W // 2
         pad_left = W // 2
         pad_right = W - pad_left
 
-        mask = torch.zeros(1, 1, H, W, dtype=image.dtype, device=image.device)  
+        mask = torch.ones(1, 1, H, W, dtype=image.dtype, device=image.device)  
         mask_padded = torch.nn.functional.pad(
             mask, (pad_left, pad_right), mode="constant", value=0.0
         )
