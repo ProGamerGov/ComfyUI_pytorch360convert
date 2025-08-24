@@ -33,7 +33,7 @@ class C2ENode:
 
     FUNCTION = "c2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def c2e(
         self,
@@ -85,7 +85,7 @@ class E2CNode:
 
     FUNCTION = "e2c"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def e2c(
         self,
@@ -138,7 +138,7 @@ class E2PNode:
 
     FUNCTION = "e2p"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def e2p(
         self,
@@ -192,7 +192,7 @@ class E2ENode:
 
     FUNCTION = "e2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def e2e(
         self,
@@ -233,7 +233,7 @@ class SplitFacesNode:
 
     FUNCTION = "split_faces"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def split_faces(self, face_stack: torch.Tensor) -> Tuple[torch.Tensor, ...]:
         assert (
@@ -269,7 +269,7 @@ class StackFacesNode:
 
     FUNCTION = "stack_faces"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def stack_faces(
         self,
@@ -318,7 +318,7 @@ class RollImageNode:
 
     FUNCTION = "roll_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def roll_image(
         self,
@@ -364,7 +364,7 @@ class C2EMaskedDiffNode:
 
     FUNCTION = "c2e_masked_diff"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def c2e_masked_diff(
         self,
@@ -421,7 +421,7 @@ class CropImageWithCoordsNode:
 
     FUNCTION = "crop_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def crop_image(
         self,
@@ -479,7 +479,7 @@ class PasteImageWithCoordsNode:
 
     FUNCTION = "paste_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def paste_image(
         self, full_image: torch.Tensor, cropped_image: torch.Tensor, coords: List[int]
@@ -515,7 +515,7 @@ class Pad180To360Node:
 
     FUNCTION = "pad_180_to_360_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def pad_180_to_360_image(
         self, image: torch.Tensor, fill_value: float = 0.0
@@ -552,7 +552,7 @@ class Crop360To180Node:
 
     FUNCTION = "crop_360_to_180_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def crop_360_to_180_image(self, image: torch.Tensor) -> Tuple[torch.Tensor]:
         """
@@ -611,7 +611,7 @@ class StereoToMonoScopicNode:
 
     FUNCTION = "split_stereo_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/stereo"
 
     def split_stereo_image(
         self,
@@ -706,7 +706,7 @@ class MonoScopicToStereoNode:
 
     FUNCTION = "merge_monoscopic_to_stereo"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/stereo"
 
     def merge_monoscopic_to_stereo(
         self,
@@ -836,7 +836,7 @@ class ApplyCircularConvPaddingModel:
             },
         }
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/models"
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "run"
 
@@ -883,7 +883,7 @@ class ApplyCircularConvPaddingVAE:
 
     RETURN_TYPES = ("VAE",)
     FUNCTION = "run"
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/models"
 
     def run(
         self, vae: torch.nn.Module, inplace: bool = True, x_axis_only: bool = True
@@ -991,7 +991,7 @@ class CreateSeamMask:
 
     FUNCTION = "run"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run(
         self,
@@ -1039,7 +1039,7 @@ class E2Face:
 
     FUNCTION = "run_e2face"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def run_e2face(
         self,
@@ -1151,7 +1151,7 @@ class CreatePoleMask:
 
     FUNCTION = "run"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run(
         self,
@@ -1224,7 +1224,7 @@ class Face2E:
 
     FUNCTION = "run_face2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/equirectangular"
 
     def run_face2e(
         self,
@@ -1283,7 +1283,7 @@ class RollMaskNode:
 
     FUNCTION = "roll_mask"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def roll_mask(
         self,
@@ -1328,7 +1328,7 @@ class FaceMask2E:
 
     FUNCTION = "run_facemask2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run_facemask2e(
         self,
@@ -1386,7 +1386,7 @@ class EMask2Face:
 
     FUNCTION = "run_emask2face"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run_emask2face(
         self,
@@ -1448,7 +1448,7 @@ class MaskE2ENode:
 
     FUNCTION = "mask_e2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def mask_e2e(
         self,
@@ -1469,3 +1469,40 @@ class MaskE2ENode:
                 channels_first=False,
             )[..., 0],
         )
+
+
+class Create180To360Mask:
+    @classmethod
+    def INPUT_TYPES(s) -> Dict:
+        return {
+            "required": {
+                "image": ("IMAGE", {"default": None}),
+                "input_mode": (
+                    ["360", "180"],
+                    {"default": "180"},
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("Equirectangular Mask",)
+
+    FUNCTION = "mask_180_to_360"
+
+    CATEGORY = "pytorch360convert/mask"
+
+    def mask_180_to_360(
+        self, image: torch.Tensor, input_mode: str = "180"
+    ) -> Tuple[torch.Tensor]:
+        assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
+        _, H, W, _ = image.shape
+        if input_mode == "360":
+            W = W // 2
+        pad_left = W // 2
+        pad_right = W - pad_left
+
+        mask = torch.ones(1, 1, H, W, dtype=image.dtype, device=image.device)
+        mask_padded = torch.nn.functional.pad(
+            mask, (pad_left, pad_right), mode="constant", value=0.0
+        )
+        return (mask_padded[:, 0, ...],)

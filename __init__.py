@@ -3,6 +3,7 @@ from .nodes import (
     ApplyCircularConvPaddingVAE,
     C2EMaskedDiffNode,
     C2ENode,
+    Create180To360Mask,
     CreatePoleMask,
     CreateSeamMask,
     Crop360To180Node,
@@ -57,6 +58,7 @@ NODE_CLASS_MAPPINGS = {
     # Masks
     "Create Seam Mask": CreateSeamMask,
     "Create Pole Mask": CreatePoleMask,
+    "Create 180 To 360 Mask": Create180To360Mask,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -91,4 +93,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     # Masks
     "Create Seam Mask": "Create Seam Mask",
     "Create Pole Mask": "Create Pole Mask",
+    "Create 180 To 360 Mask": "Create 180 To 360 Mask",
 }
