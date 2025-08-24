@@ -23,6 +23,7 @@ from .nodes import (
     SplitFacesNode,
     StackFacesNode,
     StereoToMonoScopicNode,
+    Create180To360Mask,
 )
 
 NODE_CLASS_MAPPINGS = {
@@ -57,6 +58,7 @@ NODE_CLASS_MAPPINGS = {
     # Masks
     "Create Seam Mask": CreateSeamMask,
     "Create Pole Mask": CreatePoleMask,
+    "Create 180 To 360 Mask": Create180To360Mask,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -91,4 +93,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     # Masks
     "Create Seam Mask": "Create Seam Mask",
     "Create Pole Mask": "Create Pole Mask",
+    "Create 180 To 360 Mask": "Create 180 To 360 Mask",
 }
