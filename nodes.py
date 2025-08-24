@@ -1481,6 +1481,7 @@ class Create180To360Mask:
                     ["360", "180"],
                     {"default": "180"},
                 ),
+                "feather": ("INT", {"default": 0}),
             },
         }
 
@@ -1492,17 +1493,33 @@ class Create180To360Mask:
     CATEGORY = "pytorch360convert/mask"
 
     def mask_180_to_360(
-        self, image: torch.Tensor, input_mode: str = "180"
+        self, image: torch.Tensor, input_mode: str = "180", feather: int = 0
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, f"image should have 4 dimensions, got {image.dim()}"
         _, H, W, _ = image.shape
+
+        # For 360 input, the valid region is only half width
         if input_mode == "360":
             W = W // 2
+
         pad_left = W // 2
         pad_right = W - pad_left
+        total_width = W + pad_left + pad_right  # == 2*W
 
-        mask = torch.ones(1, 1, H, W, dtype=image.dtype, device=image.device)
-        mask_padded = torch.nn.functional.pad(
-            mask, (pad_left, pad_right), mode="constant", value=0.0
-        )
-        return (mask_padded[:, 0, ...],)
+        # Start with zeros everywhere
+        mask = torch.zeros(H, total_width, dtype=image.dtype, device=image.device)
+
+        # Fill the main region with 1.0
+        mask[:, pad_left:pad_left+W] = 1.0
+
+        if feather > 0:
+            ramp = torch.linspace(0, 1, steps=feather+1, device=image.device, dtype=image.dtype)[1:]
+
+            # Left feather (in the padded zero region, approaching the mask)
+            mask[:, pad_left-feather:pad_left] = ramp
+
+            # Right feather (in the padded zero region, approaching the mask)
+            mask[:, pad_left+W:pad_left+W+feather] = ramp.flip(0)
+
+        # [1, H, W] mask tensor
+        return (mask.unsqueeze(0),)
