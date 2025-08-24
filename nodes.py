@@ -479,7 +479,7 @@ class PasteImageWithCoordsNode:
 
     FUNCTION = "paste_image"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/miscellaneous"
 
     def paste_image(
         self, full_image: torch.Tensor, cropped_image: torch.Tensor, coords: List[int]
