@@ -991,7 +991,7 @@ class CreateSeamMask:
 
     FUNCTION = "run"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run(
         self,
@@ -1151,7 +1151,7 @@ class CreatePoleMask:
 
     FUNCTION = "run"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run(
         self,
@@ -1283,7 +1283,7 @@ class RollMaskNode:
 
     FUNCTION = "roll_mask"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def roll_mask(
         self,
@@ -1328,7 +1328,7 @@ class FaceMask2E:
 
     FUNCTION = "run_facemask2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run_facemask2e(
         self,
@@ -1386,7 +1386,7 @@ class EMask2Face:
 
     FUNCTION = "run_emask2face"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def run_emask2face(
         self,
@@ -1448,7 +1448,7 @@ class MaskE2ENode:
 
     FUNCTION = "mask_e2e"
 
-    CATEGORY = "pytorch360convert"
+    CATEGORY = "pytorch360convert/mask"
 
     def mask_e2e(
         self,
