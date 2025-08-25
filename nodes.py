@@ -897,7 +897,7 @@ class ApplyCircularConvPaddingVAE:
 
 
 def _create_center_seam_mask(
-    x: torch.Tensor, frac_width: float = 0.10, feather: int = 0
+    x: torch.Tensor, frac_width: float = 0.10, pixel_width: int = 0, feather: int = 0
 ) -> torch.Tensor:
     """
     For a ComfyUI-style mask: shape [B, H, W], values 0 or 1, with optional feathering.
@@ -905,6 +905,7 @@ def _create_center_seam_mask(
     Args:
         x (torch.Tensor): input tensor with shape [B, H, W, C].
         frac_width (float, optional): fraction of input width for the vertical strip.
+        pixel_width (int, optional): width of the seam in pixels (if > 0).
         feather (int, optional): pixel size of feathering on both sides of the mask.
 
     Returns:
@@ -913,7 +914,12 @@ def _create_center_seam_mask(
     # Extract batch, height, and width from x
     B, H, W, *_ = x.shape
 
-    strip = max(1, int(W * frac_width))
+    # Determine strip width
+    if pixel_width > 0:
+        strip = pixel_width
+    else:
+        strip = max(1, int(W * frac_width))
+
     x0 = (W - strip) // 2
     x1 = x0 + strip
 
@@ -970,7 +976,15 @@ class CreateSeamMask:
         return {
             "required": {
                 "image": ("IMAGE", {"default": None}),
-                "seam_mask_width": ("FLOAT", {"default": 0.10}),
+                "frac_width": ("FLOAT", {"default": 0.10}),
+                "pixel_width": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "tooltip": "Width of the seam in pixels."
+                        + " If > 0, frac_width is ignored in favour of width_pixel.",
+                    },
+                ),
                 "feather": (
                     "INT",
                     {"default": 0, "tooltip": "Pixel size of the feathering."},
@@ -996,7 +1010,8 @@ class CreateSeamMask:
     def run(
         self,
         image: torch.Tensor,
-        seam_mask_width: float = 0.10,
+        frac_width: float = 0.10,
+        pixel_width: int = 0,
         feather: int = 0,
         roll_x_by_50_percent: bool = False,
     ) -> Tuple[torch.Tensor]:
@@ -1004,7 +1019,7 @@ class CreateSeamMask:
         _, H, W, _ = image.shape
         px_half = W // 2
         seam_mask = _create_center_seam_mask(
-            image, frac_width=seam_mask_width, feather=feather
+            image, frac_width=frac_width, pixel_width=pixel_width, feather=feather
         )
 
         if roll_x_by_50_percent:
@@ -1147,7 +1162,7 @@ class CreatePoleMask:
         }
 
     RETURN_TYPES = ("MASK",)
-    RETURN_NAMES = ("Seam Mask",)
+    RETURN_NAMES = ("Pole Mask",)
 
     FUNCTION = "run"
 
