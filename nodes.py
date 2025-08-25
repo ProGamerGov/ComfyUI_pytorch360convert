@@ -977,7 +977,14 @@ class CreateSeamMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "frac_width": ("FLOAT", {"default": 0.10}),
-                "pixel_width": ("INT", {"default": 0, "tooltip": "Width of the seam in pixels." + " If > 0, frac_width is ignored in favour of width_pixel."}),
+                "pixel_width": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "tooltip": "Width of the seam in pixels."
+                        + " If > 0, frac_width is ignored in favour of width_pixel.",
+                    },
+                ),
                 "feather": (
                     "INT",
                     {"default": 0, "tooltip": "Pixel size of the feathering."},
@@ -1007,7 +1014,6 @@ class CreateSeamMask:
         pixel_width: int = 0,
         feather: int = 0,
         roll_x_by_50_percent: bool = False,
-    ) -> Tuple[torch.Tensor]:
     ) -> Tuple[torch.Tensor]:
         assert image.dim() == 4, "Image should have 4 dimensions"
         _, H, W, _ = image.shape
