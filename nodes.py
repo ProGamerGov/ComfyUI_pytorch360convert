@@ -1510,16 +1510,18 @@ class Create180To360Mask:
         mask = torch.zeros(H, total_width, dtype=image.dtype, device=image.device)
 
         # Fill the main region with 1.0
-        mask[:, pad_left:pad_left+W] = 1.0
+        mask[:, pad_left : pad_left + W] = 1.0
 
         if feather > 0:
-            ramp = torch.linspace(0, 1, steps=feather+1, device=image.device, dtype=image.dtype)[1:]
+            ramp = torch.linspace(
+                0, 1, steps=feather + 1, device=image.device, dtype=image.dtype
+            )[1:]
 
             # Left feather (in the padded zero region, approaching the mask)
-            mask[:, pad_left-feather:pad_left] = ramp
+            mask[:, pad_left - feather : pad_left] = ramp
 
             # Right feather (in the padded zero region, approaching the mask)
-            mask[:, pad_left+W:pad_left+W+feather] = ramp.flip(0)
+            mask[:, pad_left + W : pad_left + W + feather] = ramp.flip(0)
 
         # [1, H, W] mask tensor
         return (mask.unsqueeze(0),)
