@@ -1147,7 +1147,7 @@ class CreatePoleMask:
         }
 
     RETURN_TYPES = ("MASK",)
-    RETURN_NAMES = ("Seam Mask",)
+    RETURN_NAMES = ("Pole Mask",)
 
     FUNCTION = "run"
 
