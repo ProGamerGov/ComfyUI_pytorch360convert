@@ -1161,7 +1161,7 @@ class CreatePoleMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "circle_radius": ("FLOAT", {"default": 0.10}),
-                "pixel_radius": ("INT", {"default": 0}),
+                "pixel_radius": ("INT", {"default": 0, "tooltip": "Size of the radius in pixels." + " If > 0, circle_radius is ignored in favour of pixel_radius."}),
                 "feather": ("INT", {"default": 0}),
                 "mode": (["face", "equirectangular"], {"default": "face"}),
             },
