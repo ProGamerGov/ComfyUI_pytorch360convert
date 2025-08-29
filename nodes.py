@@ -1092,18 +1092,23 @@ class E2Face:
 
 
 def _create_centered_circle_mask(
-    x: torch.Tensor, circle_radius: float, feather: int = 0
+    x: torch.Tensor,
+    circle_radius: float,
+    feather: int = 0,
+    pixel_radius: int = 0,
 ) -> torch.Tensor:
     """
     Create a centered circle mask with optional feathering.
 
     Args:
         x (torch.Tensor): Reference tensor with shape (B, C, H, W).
-                          The mask will copy device, dtype, and batch size from x.
+            The mask will copy device, dtype, and batch size from x.
         circle_radius (float): Fraction (0.0–1.0) of max possible radius (min(H,W)/2).
-                               1.0 = circle touches edges.
-        feather (int): Feather width in pixels, extending outward from circle_radius.
-                       0 = hard edge, >0 = smooth falloff.
+            1.0 = circle touches edges.
+        feather (int, optional): Feather width in pixels, extending outward from
+            circle_radius. 0 = hard edge, >0 = smooth falloff. Default: 0
+        pixel_radius (int, optional): Explicit radius in pixels. If >0, overrides
+            circle_radius. Default: 0
 
     Returns:
         torch.Tensor: Mask tensor of shape (1, C, H, W), values in [0.0, 1.0].
@@ -1113,7 +1118,10 @@ def _create_centered_circle_mask(
 
     # Circle radius in pixels
     max_radius = size / 2.0
-    inner_radius = circle_radius * max_radius
+    if pixel_radius > 0:
+        inner_radius = float(pixel_radius)
+    else:
+        inner_radius = circle_radius * max_radius
     outer_radius = inner_radius + feather
 
     # Coordinate grid
@@ -1156,6 +1164,14 @@ class CreatePoleMask:
             "required": {
                 "image": ("IMAGE", {"default": None}),
                 "circle_radius": ("FLOAT", {"default": 0.10}),
+                "pixel_radius": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "tooltip": "Size of the radius in pixels."
+                        + " If > 0, circle_radius is ignored in favour of pixel_radius.",
+                    },
+                ),
                 "feather": ("INT", {"default": 0}),
                 "mode": (["face", "equirectangular"], {"default": "face"}),
             },
@@ -1172,6 +1188,7 @@ class CreatePoleMask:
         self,
         image: torch.Tensor,
         circle_radius: float = 0.10,
+        pixel_radius: int = 0,
         feather: int = 0,
         mode: str = "face",
     ) -> Tuple[torch.Tensor]:
@@ -1179,7 +1196,12 @@ class CreatePoleMask:
 
         if mode == "face":
             image = image.permute(0, 3, 1, 2)  # BHWC -> BCHW
-            output_mask = _create_centered_circle_mask(image, circle_radius, feather)
+            output_mask = _create_centered_circle_mask(
+                image,
+                circle_radius=circle_radius,
+                pixel_radius=pixel_radius,
+                feather=feather,
+            )
             output_mask = output_mask
         else:
             output_mask = []
@@ -1194,7 +1216,10 @@ class CreatePoleMask:
                     face_tensor = cubemap[face]  # [H_face, W_face, C]
                     face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2)
                     face_tensor = _create_centered_circle_mask(
-                        face_tensor, circle_radius, feather
+                        face_tensor,
+                        circle_radius=circle_radius,
+                        pixel_radius=pixel_radius,
+                        feather=feather,
                     )
                     cubemap[face] = face_tensor.permute(0, 2, 3, 1).squeeze(0)
 
