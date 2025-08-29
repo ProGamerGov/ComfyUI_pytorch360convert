@@ -8,7 +8,7 @@ The pytorch360convert library provides powerful and differentiable image transfo
 
 | E2C -> C2E | E2C -> Split -> Rebuild -> C2E |
 | :---: | :----: |
-| ![](examples/example_basic_equi2cubemap2equi.png) | ![](examples/example_basic_equi2cubemap2split2equi.png) |
+| ![](example_workflows/example_basic_equi2cubemap2equi.png) | ![](example_workflows/example_basic_equi2cubemap2split2equi.png) |
 
 
 ## 🔧 Requirements
