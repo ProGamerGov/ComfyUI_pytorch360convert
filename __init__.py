@@ -51,7 +51,7 @@ NODE_CLASS_MAPPINGS = {
     "Paste Image with Coords": PasteImageWithCoordsNode,
     # Stereo
     "Crop Stereo to Monoscopic": StereoToMonoScopicNode,
-    "Merge Monoscopic into Stereo": StereoToMonoScopicNode,
+    "Merge Monoscopic into Stereo": MonoScopicToStereoNode,
     # Models
     "Apply Circular Padding VAE": ApplyCircularConvPaddingVAE,
     "Apply Circular Padding Model": ApplyCircularConvPaddingModel,
