@@ -1197,7 +1197,7 @@ class CreatePoleMask:
         if mode == "face":
             image = image.permute(0, 3, 1, 2)  # BHWC -> BCHW
             output_mask = _create_centered_circle_mask(
-                image, circle_radius, pixel_radius, feather
+                image, circle_radius=circle_radius, pixel_radius=pixel_radius, feather=feather
             )
             output_mask = output_mask
         else:
@@ -1213,7 +1213,7 @@ class CreatePoleMask:
                     face_tensor = cubemap[face]  # [H_face, W_face, C]
                     face_tensor = face_tensor.unsqueeze(0).permute(0, 3, 1, 2)
                     face_tensor = _create_centered_circle_mask(
-                        face_tensor, circle_radius, pixel_radius, feather
+                        face_tensor, circle_radius=circle_radius, pixel_radius=pixel_radius, feather=feather
                     )
                     cubemap[face] = face_tensor.permute(0, 2, 3, 1).squeeze(0)
 
