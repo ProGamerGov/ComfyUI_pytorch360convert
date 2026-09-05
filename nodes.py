@@ -43,12 +43,25 @@ class C2ENode:
         padding_mode: str = "bilinear",
         cube_format: str = "stack",
     ) -> Tuple[torch.Tensor]:
-        assert e_img.shape[0] == 6, f"Input should have 6 faces, got {e_img.shape[0]}"
         h = None if h < 1 else h
         w = None if w < 1 else w
+        if cube_format in ("stack", "list", "dict"):
+            assert e_img.shape[0] == 6, f"Input should have 6 faces, got {e_img.shape[0]}"
+        else:  # "dice" or "horizon": single composited image, batch dim of 1
+            assert e_img.shape[0] == 1, (
+                f"Input should have a batch size of 1 for cube_format="
+                f"'{cube_format}', got {e_img.shape[0]}"
+            )
+        face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
+        if cube_format == "list":
+            cubemap = list(e_img.unbind(0))
+        elif cube_format == "dict":
+            cubemap = dict(zip(face_keys, e_img.unbind(0)))
+        else:
+            cubemap = e_img.squeeze(0)
         return (
             c2e(
-                e_img.squeeze(0),
+                cubemap,
                 h=h,
                 w=w,
                 cube_format=cube_format,
@@ -105,7 +118,13 @@ class E2CNode:
             cube_format=cube_format,
             channels_first=False,
         )
-        output = output.unsqueeze(0) if output.dim() == 3 else output
+        if cube_format == "dict":
+            face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
+            output = torch.stack([output[k] for k in face_keys], dim=0)
+        elif cube_format == "list":
+            output = torch.stack(list(output), dim=0)
+        elif output.dim() == 3:
+            output = output.unsqueeze(0)
         return (output,)
 
 
