@@ -43,12 +43,25 @@ class C2ENode:
         padding_mode: str = "bilinear",
         cube_format: str = "stack",
     ) -> Tuple[torch.Tensor]:
-        assert e_img.shape[0] == 6, f"Input should have 6 faces, got {e_img.shape[0]}"
         h = None if h < 1 else h
         w = None if w < 1 else w
+        if cube_format in ("stack", "list", "dict"):
+            assert e_img.shape[0] == 6, f"Input should have 6 faces, got {e_img.shape[0]}"
+        else:  # "dice" or "horizon": single composited image, batch dim of 1
+            assert e_img.shape[0] == 1, (
+                f"Input should have a batch size of 1 for cube_format="
+                f"'{cube_format}', got {e_img.shape[0]}"
+            )
+        face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
+        if cube_format == "list":
+            cubemap = list(e_img.unbind(0))
+        elif cube_format == "dict":
+            cubemap = dict(zip(face_keys, e_img.unbind(0)))
+        else:
+            cubemap = e_img.squeeze(0)
         return (
             c2e(
-                e_img.squeeze(0),
+                cubemap,
                 h=h,
                 w=w,
                 cube_format=cube_format,
@@ -140,31 +153,32 @@ class E2PNode:
 
     CATEGORY = "pytorch360convert/equirectangular"
 
-    def e2p(
+    def e2c(
         self,
         e_img: torch.Tensor,
-        fov_deg_h: float = 90.0,
-        fov_deg_v: float = 90.0,
-        h_deg: float = 0.0,
-        v_deg: float = 0.0,
-        out_h: int = 512,
-        out_w: int = 512,
-        in_rot_deg: float = 0.0,
+        face_width: int = -1,
         padding_mode: str = "bilinear",
+        cube_format: str = "stack",
     ) -> Tuple[torch.Tensor]:
-        assert e_img.dim() == 4, f"e_img should have 4 dimensions, got {e_img.dim()}"
-        return (
-            e2p(
-                e_img,
-                fov_deg=(fov_deg_h, fov_deg_v),
-                h_deg=h_deg,
-                v_deg=v_deg,
-                out_hw=(out_h, out_w),
-                in_rot_deg=in_rot_deg,
-                mode=padding_mode,
-                channels_first=False,
-            ),
+        assert e_img.shape[0] == 1, (
+            "Only a batch size of 1 is currently" + f"supported, got {e_img.shape[0]}"
         )
+        face_width = e_img.shape[1] // 2 if face_width < 1 else face_width
+        output = e2c(
+            e_img.squeeze(0),
+            face_w=face_width,
+            mode=padding_mode,
+            cube_format=cube_format,
+            channels_first=False,
+        )
+        if cube_format == "dict":
+            face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
+            output = torch.stack([output[k] for k in face_keys], dim=0)
+        elif cube_format == "list":
+            output = torch.stack(list(output), dim=0)
+        elif output.dim() == 3:
+            output = output.unsqueeze(0)
+        return (output,)
 
 
 class E2ENode:
