@@ -118,7 +118,13 @@ class E2CNode:
             cube_format=cube_format,
             channels_first=False,
         )
-        output = output.unsqueeze(0) if output.dim() == 3 else output
+        if cube_format == "dict":
+            face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
+            output = torch.stack([output[k] for k in face_keys], dim=0)
+        elif cube_format == "list":
+            output = torch.stack(list(output), dim=0)
+        elif output.dim() == 3:
+            output = output.unsqueeze(0)
         return (output,)
 
 
@@ -153,32 +159,31 @@ class E2PNode:
 
     CATEGORY = "pytorch360convert/equirectangular"
 
-    def e2c(
+    def e2p(
         self,
         e_img: torch.Tensor,
-        face_width: int = -1,
+        fov_deg_h: float = 90.0,
+        fov_deg_v: float = 90.0,
+        h_deg: float = 0.0,
+        v_deg: float = 0.0,
+        out_h: int = 512,
+        out_w: int = 512,
+        in_rot_deg: float = 0.0,
         padding_mode: str = "bilinear",
-        cube_format: str = "stack",
     ) -> Tuple[torch.Tensor]:
-        assert e_img.shape[0] == 1, (
-            "Only a batch size of 1 is currently" + f"supported, got {e_img.shape[0]}"
+        assert e_img.dim() == 4, f"e_img should have 4 dimensions, got {e_img.dim()}"
+        return (
+            e2p(
+                e_img,
+                fov_deg=(fov_deg_h, fov_deg_v),
+                h_deg=h_deg,
+                v_deg=v_deg,
+                out_hw=(out_h, out_w),
+                in_rot_deg=in_rot_deg,
+                mode=padding_mode,
+                channels_first=False,
+            ),
         )
-        face_width = e_img.shape[1] // 2 if face_width < 1 else face_width
-        output = e2c(
-            e_img.squeeze(0),
-            face_w=face_width,
-            mode=padding_mode,
-            cube_format=cube_format,
-            channels_first=False,
-        )
-        if cube_format == "dict":
-            face_keys = ["Front", "Right", "Back", "Left", "Up", "Down"]
-            output = torch.stack([output[k] for k in face_keys], dim=0)
-        elif cube_format == "list":
-            output = torch.stack(list(output), dim=0)
-        elif output.dim() == 3:
-            output = output.unsqueeze(0)
-        return (output,)
 
 
 class E2ENode:
